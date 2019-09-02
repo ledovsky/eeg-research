@@ -9,6 +9,8 @@ from scipy import signal
 from scipy.signal import hilbert
 from scipy.stats import pearsonr
 
+from tqdm import tqdm
+
 from mne.connectivity import spectral_connectivity, phase_slope_index
 
 
@@ -32,18 +34,23 @@ def get_feature_build_func(method, verbose=None):
     def wrapped(data_path, out_path):
         path_file_path = join(data_path, 'path_file.csv')
         path_df = pd.read_csv(path_file_path)
+        # required columns check
+        assert all([col in path_df.columns for col in ['fn', 'target']])
 
-        features_path = join(out_path, 'features')
-        if not exists(features_path):
-            mkdir(features_path)
+        features_dir_path = join(out_path, 'features')
+        if not exists(features_dir_path):
+            mkdir(features_dir_path)
+
+        features_path = join(features_dir_path, method.replace('-', '_') + '.csv')
 
         new_rows = []
 
-        for i, row in path_df.iterrows():
+
+        for i, row in tqdm(path_df.iterrows(), total=len(path_df)):
             if verbose and i % 10 == 0:
                 print('At file {}'.format(i + 1))
             try:
-                path = join(data_path, row['fn'] + '.csv')
+                path = join(data_path, row['fn'])
                 df = pd.read_csv(path, index_col='time')
                 new_row = f(df)
             except AssertionError:
@@ -53,14 +60,13 @@ def get_feature_build_func(method, verbose=None):
                 print('Not found - ' + row['fn'])
                 continue
 
-            new_row['fn'] = row['fn']
-            new_row['is_patient'] = row['is_patient']
-            new_row['dataset'] = row['dataset']
+            for col in path_df.columns:
+                new_row[col] = row[col]
             new_rows.append(new_row)
 
         res_df = pd.DataFrame(new_rows)
 
-        res_df.to_csv(out_path, index=False)
+        res_df.to_csv(features_path, index=False)
 
     return wrapped
 

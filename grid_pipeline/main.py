@@ -20,10 +20,10 @@ class StageManager(object):
         # model stages
         'm-lr': get_model_func('lr'),
         'm-lr-no-out': get_model_func('lr-no-out'),
-        'm-cart': get_model_func('lr-cart'),
-        'm-rf': get_model_func('lr-rf'),
-        'm-xgb': get_model_func('lr-xgb'),
-        'm-xgb-no-out': get_model_func('lr-xgb-no-out'),
+        'm-cart': get_model_func('cart'),
+        'm-rf': get_model_func('rf'),
+        'm-xgb': get_model_func('xgb'),
+        'm-xgb-no-out': get_model_func('xgb-no-out'),
     }
 
     def __init__(self, data_path, out_path):
@@ -49,16 +49,20 @@ class StageManager(object):
             stages = self.get_stages()
 
         for stage in stages:
-            yield self[stage]
+            yield self.stages[stage]
 
 
-def run_grid(data_path, out_path, stages):
+def run_grid(data_path, out_path, stages=[], clear=False):
 
-    if exists(out_path):
-        raise Exception('Out path exists')
+    if not exists(out_path):
+        raise Exception('Out path does not exist')
 
     if not exists(data_path):
-        raise Exception('Data path is not exist')
+        raise Exception('Data path does not exist')
+
+    if clear:
+        rmtree(out_path)
+        mkdir(out_path)
 
     stage_manager = StageManager(data_path, out_path)
 
@@ -78,6 +82,8 @@ if __name__ == '__main__':
     parser.add_argument('--out-path', action='store', type=str, required=True,
                         help='')
 
+    parser.add_argument('--clear', action='store_true')
+
     parser.add_argument('--stages', action='append')
 
 
@@ -86,4 +92,4 @@ if __name__ == '__main__':
     print('Started grid pipeline')
     # if specified take CLI param else look at config
 
-    run_grid(args.data_path, args.out_path, stages=args.stages)
+    run_grid(args.data_path, args.out_path, stages=args.stages, clear=args.clear)
