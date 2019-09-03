@@ -40,6 +40,8 @@ class StageManager(object):
         return list(self.stages.keys())
 
     def check_stages(self, stages=[]):
+        if stages is None:
+            return
         for stage in stages:
             if stage not in self.stages:
                 raise Exception('Wrong stage name - ', stage)

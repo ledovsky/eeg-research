@@ -1,9 +1,10 @@
-from os.path import isfile, exists, join
-from shutil import rmtree
+from os.path import exists, join
 from os import mkdir, remove, listdir
 
 import pandas as pd
 import numpy as np
+
+from tqdm import trange
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -17,7 +18,7 @@ import xgboost as xgb
 
 def create_or_append(df, path):
     if exists(path):
-        df.to_csv(path, mode='a', index=False)
+        df.to_csv(path, mode='a', index=False, header=False)
     else:
         df.to_csv(path, index=False)
 
@@ -39,6 +40,9 @@ def get_model_func(method):
         raise Exception('Method is not in list of allowed methods - ', method)
 
     def wrapped(data_path, out_path):
+
+        print('Started model stage -', method)
+
         features_path = join(out_path, 'features')
 
         models_res_dir = join(out_path, 'models_predict_samples')
@@ -46,8 +50,6 @@ def get_model_func(method):
             mkdir(models_res_dir)
 
         res_path = join(out_path, 'results.csv')
-
-        print(type(custom_model))
 
         for fn in listdir(features_path):
             if fn[-3:] != 'csv':
@@ -60,20 +62,21 @@ def get_model_func(method):
             y = df['target'].values
             res = run_exper(X, y, custom_model)
             res['model'] = method
+            res['features'] = fn[:-4]
             create_or_append(pd.DataFrame([res]), res_path)
 
             # save to sample predictions
             def get_pred_df():
-                random_state = np.random.choice(np.arange(1000))
+                random_state = np.random.choice(np.arange(10000))
                 custom_model.run_cv(X, y, random_state=random_state)
                 prediction_df = pd.DataFrame({'y_pred': custom_model.y_pred, 'y_true': custom_model.y_true})
                 return prediction_df
 
             prediction_df = get_pred_df()
-            prediction_df.to_csv(join(models_res_dir, method.replace('-', '_') + '.csv'), index=False)
+            prediction_df.to_csv(join(models_res_dir, method.replace('-', '_') + '_' + fn[:-4] + '.csv'), index=False)
 
             prediction_df = get_pred_df()
-            prediction_df.to_csv(join(models_res_dir, method.replace('-', '_') + '_2.csv'), index=False)
+            prediction_df.to_csv(join(models_res_dir, method.replace('-', '_') + '_' + fn[:-4] + '_2.csv'), index=False)
 
     return wrapped
 
@@ -87,8 +90,8 @@ def run_exper(X, y, custom_model, n_outliers=10):
 
     roc_aucs = []
     accs = []
-    for _ in range(n_expers):
-        random_state = np.random.choice(np.arange(1000))
+    for _ in trange(n_expers):
+        random_state = np.random.choice(np.arange(10000))
         custom_model.run_cv(X, y, random_state=random_state)
         roc_auc = custom_model.get_roc_auc()
         acc = custom_model.get_accuracy()
@@ -109,7 +112,7 @@ class BaseModel(object):
     of results and metrics that are needed for each model
     """
 
-    def __init__(self, cv='loo'):
+    def __init__(self, cv='10fold', *args, **kwargs):
         """
         Args:
             X: 2d numpy or pd.DataFrame
@@ -118,6 +121,7 @@ class BaseModel(object):
             to_drop: idx to drop during train stage
             cv: loo, 5fold or 10fold
         """
+
         self.y_pred = None
         self.y_true = None
 
@@ -167,7 +171,7 @@ class RegularModel(BaseModel):
         self.y_pred = np.zeros(shape=y.shape)
         self.y_true = y
         for train_idx, test_idx in self.cv.split(X, y):
-            if to_drop:
+            if len(to_drop):
                 train_idx = [idx for idx in train_idx if idx not in to_drop]
             self.model.fit(X[train_idx, :], y[train_idx])
             self.y_pred[test_idx] = self.model.predict_proba(X[test_idx, :])[:, 1]
@@ -180,11 +184,11 @@ class NoOutliersModel(BaseModel):
         self.model_1 = model_1
         self.model_2 = model_2
 
-    def run_cv(self, X, y, random_state=42):
+    def run_cv(self, X, y, random_state=42, *args, **kwargs):
         self.model_1.set_params(random_state=random_state)
         self.model_2.set_params(random_state=random_state)
-        submodel_1 =  BaseModel(self.model_1)
-        submodel_2 = BaseModel(self.model_2)
+        submodel_1 =  RegularModel(self.model_1, random_state=random_state)
+        submodel_2 = RegularModel(self.model_2, random_state=random_state)
         submodel_1.run_cv(X, y)
         outliers_idx = submodel_1.get_outliers_idx(n_outliers=self.n_outliers)
         submodel_2.run_cv(X, y, to_drop=outliers_idx)
@@ -209,9 +213,9 @@ class LRModelNoOut(NoOutliersModel):
         model_2 = LogisticRegression(solver='liblinear')
         super(LRModelNoOut, self).__init__(model_1=model_1, model_2=model_2, *args, **kwargs)
 
-    def run_cv(self, X, y, to_drop=[]):
+    def run_cv(self, X, y, *args, **kwargs):
         X = StandardScaler().fit_transform(X)
-        super(LRModelNoOut, self).run_cv(X, y, to_drop)
+        super(LRModelNoOut, self).run_cv(X, y, *args, **kwargs)
 
 
 class TreeModel(RegularModel):

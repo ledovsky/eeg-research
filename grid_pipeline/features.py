@@ -32,6 +32,9 @@ def get_feature_build_func(method, verbose=None):
         raise ValueError('Features method is not in allowed list')
 
     def wrapped(data_path, out_path):
+
+        print('Started features stage -', method)
+
         path_file_path = join(data_path, 'path_file.csv')
         path_df = pd.read_csv(path_file_path)
         # required columns check
