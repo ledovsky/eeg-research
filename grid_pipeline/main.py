@@ -19,11 +19,13 @@ class StageManager(object):
         'f-env-beta': get_feature_build_func('env-beta'),
         # model stages
         'm-lr': get_model_func('lr'),
-        'm-lr-no-out': get_model_func('lr-no-out'),
+        'm-lr-feat-sel': get_model_func('lr-feat-sel'),
         'm-cart': get_model_func('cart'),
+        'm-cart-feat-sel': get_model_func('cart-feat-sel'),
         'm-rf': get_model_func('rf'),
+        'm-rf-feat-sel': get_model_func('rf-feat-sel'),
         'm-xgb': get_model_func('xgb'),
-        'm-xgb-no-out': get_model_func('xgb-no-out'),
+        'm-xgb-feat-sel': get_model_func('xgb-feat-sel'),
     }
 
     def __init__(self, data_path, out_path):

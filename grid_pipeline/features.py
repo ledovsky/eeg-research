@@ -172,7 +172,7 @@ def get_mne_spec_con_feats(df, sfreq=500., rhythm='alpha', method='coh'):
         df[electrodes].values.T.reshape(1, len(electrodes), -1),
         method=method, sfreq=sfreq, verbose=False)
 
-    coh_data = res[0]
+    data = res[0]
     freqs = res[1]
 
     if rhythm == 'alpha':
@@ -181,6 +181,8 @@ def get_mne_spec_con_feats(df, sfreq=500., rhythm='alpha', method='coh'):
     elif rhythm == 'beta':
         fmin = 13
         fmax = 30
+    else:
+        ValueError('Wrong rhythm specified')
 
     idx_start = np.where(freqs > fmin)[0][0]
     idx_end = np.where(freqs < fmax)[0][-1]
@@ -192,7 +194,7 @@ def get_mne_spec_con_feats(df, sfreq=500., rhythm='alpha', method='coh'):
     for idx_1, idx_2 in itertools.combinations(range(len(electrodes)), 2):
         el_1 = idx_electrodes_dict[idx_1]
         el_2 = idx_electrodes_dict[idx_2]
-        d['con_alpha_' + el_1 + '_' + el_2] = coh_data[idx_2, idx_1][idx_start:idx_end + 1].mean()
+        d[method + '_' + rhythm + '_' + el_1 + '_' + el_2] = data[idx_2, idx_1][idx_start:idx_end + 1].mean()
 
     return d
 
@@ -224,7 +226,7 @@ def get_envelope_feats(df, sfreq=500., rhythm='alpha'):
         el_2 = idx_electrodes_dict[idx_2]
         series_1 = df[el_1 + '_env'].values[500:-500]
         series_2 = df[el_2 + '_env'].values[500:-500]
-        d['env_cor_' + el_1 + '_' + el_2] = pearsonr(series_1, series_2)[0]
+        d['env_' + rhythm + '_' + el_1 + '_' + el_2] = pearsonr(series_1, series_2)[0]
 
     return d
 
