@@ -22,8 +22,8 @@ class StageManager(object):
         'm-lr-feat-sel': get_model_func('lr-feat-sel'),
         'm-cart': get_model_func('cart'),
         'm-cart-feat-sel': get_model_func('cart-feat-sel'),
-        'm-rf': get_model_func('rf'),
-        'm-rf-feat-sel': get_model_func('rf-feat-sel'),
+        # 'm-rf': get_model_func('rf'),
+        # 'm-rf-feat-sel': get_model_func('rf-feat-sel'),
         'm-xgb': get_model_func('xgb'),
         'm-xgb-feat-sel': get_model_func('xgb-feat-sel'),
     }
