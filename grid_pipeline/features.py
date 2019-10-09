@@ -63,7 +63,7 @@ def get_feature_build_func(method, verbose=None):
                 print('Not found - ' + row['fn'])
                 continue
 
-            for col in path_df.columns:
+            for col in ['fn', 'target']:
                 new_row[col] = row[col]
             new_rows.append(new_row)
 

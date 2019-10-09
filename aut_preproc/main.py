@@ -17,6 +17,8 @@ def main():
 
     create_if_necessary(out_path)
 
+    to_exclude = []
+
     for i, row in path_df.iterrows():
 
         path_to_save = join(out_path, row['fn'])
@@ -28,9 +30,11 @@ def main():
         # Currently we can not work with these records
         if row['fn'][:-4] in ['17m_As_fon', '15m_Lp_fon', '17m_Au_fon', 'dev11_og']:
             print('Unusual channel names', row['fn'])
+            to_exclude.append(i)
             continue
         if row['fn'][:-4] == 'KOMLEVA_ORG_ASD_F':
             print('Cant read KOMLEVA_ORG_ASD_F')
+            to_exclude.append(i)
             continue
 
         raw_file = read_raw_edf(row['full_path'], verbose=False)
@@ -42,6 +46,7 @@ def main():
         df.to_csv(path_to_save)
 
     del path_df['full_path']
+    path_df = path_df.loc[~path_df.index.isin(to_exclude)]
     path_df.to_csv(join(out_path, 'path_file.csv'), index=False)
 
 
