@@ -11,7 +11,7 @@ class PathDataFrameConstructor(object):
 
     def process_path(self, path, target_value, dataset_name, ext='edf'):
         for fn in listdir(path):
-            if fn[-3:] != ext:
+            if fn[-3:].lower() != ext:
                 continue
 
             full_path = join(path, fn)
@@ -21,7 +21,7 @@ class PathDataFrameConstructor(object):
 
             d = {}
             d['full_path'] = full_path
-            d['fn'] = fn.replace(ext, 'csv')
+            d['fn'] = fn.lower().replace(ext, 'csv')
             d['target'] = target_value
             d['dataset_name'] = dataset_name
 

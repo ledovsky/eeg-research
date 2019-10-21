@@ -28,16 +28,31 @@ def main():
         print(row['fn'])
 
         # Currently we can not work with these records
-        if row['fn'][:-4] in ['17m_As_fon', '15m_Lp_fon', '17m_Au_fon', 'dev11_og']:
+        if row['fn'][:-4] in ['17m_as_fon', '15m_lp_fon', '17m_au_fon', 'dev11_og']:
             print('Unusual channel names', row['fn'])
             to_exclude.append(i)
             continue
-        if row['fn'][:-4] == 'KOMLEVA_ORG_ASD_F':
+        if row['fn'][:-4] == 'komleva_org_asd_f':
             print('Cant read KOMLEVA_ORG_ASD_F')
             to_exclude.append(i)
             continue
 
-        raw_file = read_raw_edf(row['full_path'], verbose=False)
+        if row['fn'][:-4] == 'andrey_6_norm_new':
+            print('ANDREY_6_NORM_new - no A1-A2')
+            to_exclude.append(i)
+            continue
+
+        if row['fn'][:-4] in ['GOLOSHAPOV_PETY_6_FON_long'.lower(), 'KISLYKOV NIKITA 3_FON_OPEN'.lower()]:
+            print(row['fn'], 'file duplicated')
+            to_exclude.append(i)
+            continue
+
+        # if row['fn'][:-4] == 'MALE_6_ASD_new':
+        #     print('Strange record')
+        #     to_exclude.append(i)
+        #     continue
+
+        raw_file = read_raw_edf(row['full_path'], verbose=False, preload=True)
         df = raw_file.to_data_frame()
         df = change_ref_to_a1(df, row['fn'])
 
@@ -89,6 +104,9 @@ def extract_epoches(path_file_path, out_path, fn='', debug=False):
             continue
         if row['fn'] == 'dev11_og':
             print('dev11_og - something wrong in column names')
+            continue
+        if row['fn'] == 'ANDREY_6_NORM_new':
+            print('ANDREY_6_NORM_new - no A1-A2')
             continue
         raw_file = read_raw_edf(row['full_path'], verbose=False)
         df = raw_file.to_data_frame()
@@ -142,6 +160,14 @@ def change_ref_to_a1(df, fn):
         new_df['a1'] = 0
 
     return new_df
+
+
+def change_reference(df, new_ref):
+    df = df.copy()
+    for col in df.columns:
+        df[col] = df[col] - df[new_ref]
+
+    return df
 
 
 if __name__ == '__main__':
