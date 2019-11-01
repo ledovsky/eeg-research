@@ -39,5 +39,9 @@ electrodes = [
     'c3',
     'p3',
     't5',
-    'cz'
+    'cz',
+    'fp1',
+    'fp2',
+    'pz',
+    'fz'
 ]
