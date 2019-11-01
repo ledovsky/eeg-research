@@ -1,6 +1,8 @@
 from os import listdir
 from os.path import join
+import re
 
+import numpy as np
 import pandas as pd
 from mne.io import read_raw_edf
 
@@ -28,6 +30,11 @@ class PathDataFrameConstructor(object):
             d['sfreq'] = sample.info['sfreq']
             d['channels'] = '|'.join(sorted(sample.info['ch_names']))
             d['n_channels'] = len(sample.info['ch_names'])
+            found = re.findall('\d+', fn)[0]
+            if found:
+                d['age'] = found
+            else:
+                d['age'] = np.nan
 
             eeg_channels = [ch for ch in sample.info['ch_names'] if 'EEG' in ch]
 
