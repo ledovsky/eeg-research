@@ -14,26 +14,26 @@ from tqdm import tqdm
 from mne.connectivity import spectral_connectivity, phase_slope_index
 
 
-def get_feature_build_func(method, verbose=None):
+def get_feature_build_func(method_name, verbose=None):
 
-    if method == 'coh-alpha':
-        f = partial(get_mne_spec_con_feats, sfreq=125., rhythm='alpha', method='coh')
-    elif method == 'coh-beta':
-        f = partial(get_mne_spec_con_feats, sfreq=125., rhythm='beta', method='coh')
-    elif method == 'env-alpha':
-        f = partial(get_envelope_feats, sfreq=125., rhythm='alpha')
-    elif method == 'env-beta':
-        f = partial(get_envelope_feats, sfreq=125., rhythm='beta')
-    elif method == 'bands':
-        f = partial(get_rhythm_feats, sfreq=125.)
-    elif method == 'psi':
-        f = partial(get_psi_feats, sfreq=125.)
-    else:
-        raise ValueError('Features method is not in allowed list')
+    methods = {
+        'coh': partial(get_mne_spec_con_feats, band=None, method='coh'),
+        'coh-alpha': partial(get_mne_spec_con_feats, band='alpha', method='coh'),
+        'coh-beta': partial(get_mne_spec_con_feats, band='beta', method='coh'),
+        'coh-theta': partial(get_mne_spec_con_feats, band='theta', method='coh'),
+        'env': partial(get_envelope_feats, band=None),
+        'env-alpha': partial(get_envelope_feats, band='alpha'),
+        'env-beta': partial(get_envelope_feats, band='beta'),
+        'env-theta': partial(get_envelope_feats, band='theta'),
+        'bands': get_bands_feats,
+        'psi': get_psi_feats,
+    }
+
+    f = methods[method_name]
 
     def wrapped(data_path, out_path):
 
-        print('Started features stage -', method)
+        print('Started features stage -', method_name)
 
         path_file_path = join(data_path, 'path_file.csv')
         path_df = pd.read_csv(path_file_path)
@@ -44,7 +44,7 @@ def get_feature_build_func(method, verbose=None):
         if not exists(features_dir_path):
             mkdir(features_dir_path)
 
-        features_path = join(features_dir_path, method.replace('-', '_') + '.csv')
+        features_path = get_feature_path(method_name, features_dir_path)
 
         new_rows = []
 
@@ -74,49 +74,32 @@ def get_feature_build_func(method, verbose=None):
     return wrapped
 
 
-def process_file(path, method, rhythm=None):
-
-    if method == 'coherence':
-        f = partial(get_mne_spec_con_feats, sfreq=125., rhythm=rhythm, method='coh')
-    elif method == 'envelopes':
-        f = partial(get_envelope_feats, sfreq=125., rhythm=rhythm)
-    elif method == 'rhythms':
-        f = partial(get_rhythm_feats, sfreq=125.)
-    elif method == 'psi':
-        f = partial(get_psi_feats, sfreq=125.)
-    else:
-        raise ValueError('Features method not in allowed list')
-
-    df = pd.read_csv(path, index_col='time')
-    d = f(df)
-
-    return d
+band_bounds = {
+    'theta' : [4, 8],
+    'alpha': [8, 13],
+    'beta': [13, 30],
+    'gamma': [30, 45]
+}
 
 
-def get_alpha_filter(sfreq=500.):
-
-    f_low_lb = 7
-    f_low_ub = 8
-    f_high_lb = 13
-    f_high_ub = 14
-
-    nyq = sfreq / 2.  # the Nyquist frequency is half our sample rate
-
-    freq = [0., f_low_lb, f_low_ub, f_high_lb, f_high_ub, nyq]
-    gain = [0, 0, 1, 1, 0, 0]
-    n = int(round(5 * sfreq)) + 1
-
-    alpha_filter = signal.firwin2(n, freq, gain, nyq=nyq)
-
-    return alpha_filter
+def get_col_name(method, band, ch_1, ch_2=None):
+    band_name = 'nofilt' if band is None else band
+    s = method + '_' + band_name + '_' + ch_1
+    if ch_2:
+        s += '_' + ch_2
+    return s
 
 
-def get_beta_filter(sfreq=500.):
+def get_feature_path(method_name, path):
+    return join(path, method_name.replace('-', '_') + '.csv')
 
-    f_low_lb = 12
-    f_low_ub = 13
-    f_high_lb = 29
-    f_high_ub = 30
+
+def get_filter(sfreq=125., band='alpha'):
+
+    f_low_lb = band_bounds[band][0] - 1
+    f_low_ub = band_bounds[band][0]
+    f_high_lb = band_bounds[band][1]
+    f_high_ub = band_bounds[band][1] + 1
 
     nyq = sfreq / 2.  # the Nyquist frequency is half our sample rate
 
@@ -124,47 +107,40 @@ def get_beta_filter(sfreq=500.):
     gain = [0, 0, 1, 1, 0, 0]
     n = int(round(5 * sfreq)) + 1
 
-    alpha_filter = signal.firwin2(n, freq, gain, nyq=nyq)
+    filt = signal.firwin2(n, freq, gain, nyq=nyq)
 
-    return alpha_filter
+    return filt
 
 
-def get_rhythm_feats(df, sfreq=500.):
+def get_bands_feats(df, sfreq=125.):
 
     electrodes = df.columns
-
-    rhythms_bounds = {
-        'theta' : [4, 8],
-        'alpha': [8, 13],
-        'beta': [13, 30],
-        'gamma': [30, 45]
-    }
 
     feats = {}
 
     for el in electrodes:
         freqs, psds = signal.welch(df[el], sfreq, nperseg=1024)
         psd_df = pd.DataFrame(data={'freqs': freqs, 'psds': psds})
-        feats[el + '_alpha'] = psd_df.loc[
-            (psd_df['freqs'] >= rhythms_bounds['alpha'][0]) &
-            (psd_df['freqs'] <= rhythms_bounds['alpha'][1])]['psds'].sum()
+        feats[get_col_name('bands', 'alpha', el)] = psd_df.loc[
+            (psd_df['freqs'] >= band_bounds['alpha'][0]) &
+            (psd_df['freqs'] <= band_bounds['alpha'][1])]['psds'].sum()
 
-        feats[el + '_beta'] = psd_df.loc[
-            (psd_df['freqs'] >= rhythms_bounds['beta'][0]) &
-            (psd_df['freqs'] <= rhythms_bounds['beta'][1])]['psds'].sum()
+        feats[get_col_name('bands', 'beta', el)] = psd_df.loc[
+            (psd_df['freqs'] >= band_bounds['beta'][0]) &
+            (psd_df['freqs'] <= band_bounds['beta'][1])]['psds'].sum()
 
-        feats[el + '_theta'] = psd_df.loc[
-            (psd_df['freqs'] >= rhythms_bounds['theta'][0]) &
-            (psd_df['freqs'] <= rhythms_bounds['theta'][1])]['psds'].sum()
+        feats[get_col_name('bands', 'theta', el)] = psd_df.loc[
+            (psd_df['freqs'] >= band_bounds['theta'][0]) &
+            (psd_df['freqs'] <= band_bounds['theta'][1])]['psds'].sum()
 
-        feats[el + '_gamma'] = psd_df.loc[
-            (psd_df['freqs'] >= rhythms_bounds['gamma'][0]) &
-            (psd_df['freqs'] <= rhythms_bounds['gamma'][1])]['psds'].sum()
+        feats[get_col_name('bands', 'gamma', el)] = psd_df.loc[
+            (psd_df['freqs'] >= band_bounds['gamma'][0]) &
+            (psd_df['freqs'] <= band_bounds['gamma'][1])]['psds'].sum()
 
     return feats
 
 
-def get_mne_spec_con_feats(df, sfreq=500., rhythm='alpha', method='coh'):
+def get_mne_spec_con_feats(df, sfreq=125., band=None, method='coh'):
 
     electrodes = df.columns
 
@@ -175,17 +151,13 @@ def get_mne_spec_con_feats(df, sfreq=500., rhythm='alpha', method='coh'):
     data = res[0]
     freqs = res[1]
 
-    if rhythm == 'alpha':
-        fmin = 8
-        fmax = 13
-    elif rhythm == 'beta':
-        fmin = 13
-        fmax = 30
-    else:
-        ValueError('Wrong rhythm specified')
-
-    idx_start = np.where(freqs > fmin)[0][0]
-    idx_end = np.where(freqs < fmax)[0][-1]
+    def filter(arr):
+        if band is None:
+            return arr
+        else:
+            start_idx = np.where(freqs > band_bounds[band][0])[0][0]
+            end_idx = np.where(freqs < band_bounds[band][1])[0][-1] + 1
+            return arr[start_idx:end_idx]
 
     d = {}
 
@@ -194,28 +166,28 @@ def get_mne_spec_con_feats(df, sfreq=500., rhythm='alpha', method='coh'):
     for idx_1, idx_2 in itertools.combinations(range(len(electrodes)), 2):
         el_1 = idx_electrodes_dict[idx_1]
         el_2 = idx_electrodes_dict[idx_2]
-        d[method + '_' + rhythm + '_' + el_1 + '_' + el_2] = data[idx_2, idx_1][idx_start:idx_end + 1].mean()
+        d[get_col_name(method, band, el_1, el_2)] = filter(data[idx_2, idx_1]).mean()
 
     return d
 
 
-def get_envelope_feats(df, sfreq=500., rhythm='alpha'):
+def get_envelope_feats(df, sfreq=125., band='alpha'):
 
     electrodes = df.columns
 
     df = df.copy()
-    if rhythm == 'alpha':
-        filt = get_alpha_filter(sfreq=sfreq)
-    elif rhythm == 'beta':
-        filt = get_beta_filter(sfreq=sfreq)
+    if band is not None:
+        filt = get_filter(sfreq, band)
     else:
-        ValueError('Wrong rhythm specified')
+        filt = None
 
     for el in electrodes:
-        sig_alpha = np.convolve(filt, df[el], 'same')
-        sig_analyt = hilbert(sig_alpha)
-        sig_envelope = np.abs(sig_analyt)
-        df[el + '_env'] = sig_envelope
+        sig = df[el]
+        if filt:
+            sig = np.convolve(filt, df[el], 'same')
+        sig = hilbert(sig)
+        sig = np.abs(sig)
+        df[el + '_env'] = sig
 
     d = {}
 
@@ -226,17 +198,17 @@ def get_envelope_feats(df, sfreq=500., rhythm='alpha'):
         el_2 = idx_electrodes_dict[idx_2]
         series_1 = df[el_1 + '_env'].values[500:-500]
         series_2 = df[el_2 + '_env'].values[500:-500]
-        d['env_' + rhythm + '_' + el_1 + '_' + el_2] = pearsonr(series_1, series_2)[0]
+        d[get_col_name('env', band, el_1, el_2)] = pearsonr(series_1, series_2)[0]
 
     return d
 
 
-def get_psi_feats(df, sfreq=125.):
+def get_psi_feats(df, sfreq=125., band='alpha'):
 
     electrodes = df.columns
 
     df = df.copy()
-    alpha_filter = get_alpha_filter(sfreq=sfreq)
+    alpha_filter = get_filter(sfreq=sfreq, band=band)
 
     df = df[electrodes]
     for el in electrodes:
@@ -250,5 +222,5 @@ def get_psi_feats(df, sfreq=125.):
     d = {}
     for i in range(psi.shape[0]):
         for j in range(i):
-            d['psi_{}_{}'.format(electrodes[i], electrodes[j])] = psi[i, j, 0]
+            d[get_col_name('psi', band, electrodes[i], electrodes[j])] = psi[i, j, 0]
     return d

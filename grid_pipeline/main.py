@@ -15,8 +15,12 @@ class StageManager(object):
         'f-bands': get_feature_build_func('bands'),
         'f-coh-alpha': get_feature_build_func('coh-alpha'),
         'f-coh-beta': get_feature_build_func('coh-beta'),
+        'f-coh-theta': get_feature_build_func('coh-theta'),
         'f-env-alpha': get_feature_build_func('env-alpha'),
         'f-env-beta': get_feature_build_func('env-beta'),
+        'f-env-theta': get_feature_build_func('env-theta'),
+        'f-env': get_feature_build_func('env'),
+        'f-coh': get_feature_build_func('coh'),
         # model stages
         'm-lr': get_model_func('lr'),
         'm-lr-feat-sel': get_model_func('lr-feat-sel'),
