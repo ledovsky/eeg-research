@@ -14,7 +14,13 @@ from tqdm import tqdm
 from mne.connectivity import spectral_connectivity, phase_slope_index
 
 
-def get_feature_build_func(method_name, verbose=None):
+def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
+
+    def unity_func(x):
+        return x
+
+    if df_filter_func is None:
+        df_filter_func = unity_func
 
     methods = {
         'coh': partial(get_mne_spec_con_feats, band=None, method='coh'),
@@ -40,14 +46,9 @@ def get_feature_build_func(method_name, verbose=None):
         # required columns check
         assert all([col in path_df.columns for col in ['fn', 'target']])
 
-        features_dir_path = join(out_path, 'features')
-        if not exists(features_dir_path):
-            mkdir(features_dir_path)
-
-        features_path = get_feature_path(method_name, features_dir_path)
+        features_path = get_feature_path(method_name, out_path)
 
         new_rows = []
-
 
         for i, row in tqdm(path_df.iterrows(), total=len(path_df)):
             if verbose and i % 10 == 0:
@@ -55,6 +56,7 @@ def get_feature_build_func(method_name, verbose=None):
             try:
                 path = join(data_path, row['fn'])
                 df = pd.read_csv(path, index_col='time')
+                df = df_filter_func(df)
                 new_row = f(df)
             except AssertionError:
                 print('Error in file ' + row['fn'])
@@ -80,6 +82,30 @@ band_bounds = {
     'beta': [13, 30],
     'gamma': [30, 45]
 }
+
+
+def merge_dfs(dfs):
+    res_df = None
+
+    for i, df in enumerate(dfs):
+
+        df = df.copy()
+
+        if i == 0:
+            res_df = df
+        else:
+            del df['target']
+            res_df = res_df.merge(df, on='fn')
+
+    return res_df
+
+
+def get_merged_df(base_path, feature_methods):
+    dfs = []
+    for method in feature_methods:
+        dfs.append(pd.read_csv(get_feature_path(method, base_path)))
+    df = merge_dfs(dfs)
+    return df
 
 
 def get_col_name(method, band, ch_1, ch_2=None):
@@ -183,7 +209,7 @@ def get_envelope_feats(df, sfreq=125., band='alpha'):
 
     for el in electrodes:
         sig = df[el]
-        if filt:
+        if filt is not None:
             sig = np.convolve(filt, df[el], 'same')
         sig = hilbert(sig)
         sig = np.abs(sig)

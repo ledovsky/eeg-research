@@ -6,7 +6,7 @@ import operator
 import pandas as pd
 import numpy as np
 
-from tqdm import trange, tqdm
+from tqdm import trange, tqdm, tqdm_notebook
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -301,3 +301,220 @@ class RFModel(RegularModel):
     def __init__(self, *args, **kwargs):
         model = RandomForestClassifier(n_estimators=30, max_depth=2)
         super(RFModel, self).__init__(model=model, *args, **kwargs)
+
+
+from sklearn.base import BaseEstimator
+from sklearn.pipeline import Pipeline
+
+
+class LRScaled(BaseEstimator):
+    def __init__(self, random_state=42, **kwargs):
+        self.transformer = StandardScaler()
+        self.lr = LogisticRegression(random_state=random_state, solver='liblinear', **kwargs)
+
+    def fit(self, X, y):
+        X = self.transformer.fit_transform(X, y)
+        self.lr.fit(X, y)
+        return self
+
+    def predict(self, X):
+        X = self.transformer.transform(X)
+        return self.lr.predict(X)
+
+    def predict_proba(self, X):
+        X = self.transformer.transform(X)
+        return self.lr.predict_proba(X)
+
+
+class PredictionsResult:
+    def __init__(self, y_true, y_pred):
+        self.y_true = y_true.copy()
+        self.y_pred = y_pred.copy()
+
+    @property
+    def roc_auc(self):
+        return roc_auc_score(self.y_true, self.y_pred)
+
+    @property
+    def acc(self):
+        return accuracy_score(self.y_true, self.y_pred > 0.5)
+
+
+class RepeatedPredictionsResult:
+    def __init__(self, y_true, y_preds):
+
+        assert len(y_true.shape) == 1
+        assert len(y_preds.shape) == 2
+
+        self.y_true = y_true.copy()
+        self.y_preds = y_preds.copy()
+        self._roc_aucs = None
+        self._accs = None
+
+    @property
+    def roc_aucs(self):
+        if self._roc_aucs is None:
+            self._roc_aucs = []
+            for i in range(self.y_preds.shape[1]):
+                self._roc_aucs.append(roc_auc_score(self.y_true, self.y_preds[:, i]))
+            self._roc_aucs = np.array(self._roc_aucs)
+        return self._roc_aucs
+
+    @property
+    def accs(self):
+        if self._accs is None:
+            self._accs = []
+            for i in range(self.y_preds.shape[1]):
+                self._accs.append(accuracy_score(self.y_true, self.y_preds[:, i] > 0.5))
+            self._accs = np.array(self._accs)
+        return self._accs
+
+
+def kfold(X, y, model, n_splits=10, random_state=42, to_drop=None):
+    """
+
+    Args:
+        X:
+        y:
+        model:
+        to_drop:
+        n_splits:
+        random_state:
+
+    Returns:
+        res: PredictionsResult
+    """
+
+    model.set_params(random_state=random_state)
+    y_pred = np.zeros(shape=y.shape)
+    cv = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+
+    for train_idx, test_idx in cv.split(X, y):
+
+        # TODO: check how to_drop works
+        if to_drop:
+            train_idx = [idx for idx in train_idx if idx not in to_drop]
+
+        model.fit(X[train_idx, :], y[train_idx])
+        y_pred[test_idx] = model.predict_proba(X[test_idx, :])[:, 1]
+
+    res = PredictionsResult(y, y_pred)
+    return res
+
+
+def repeated_kfold(X, y, model, n_splits=10, n_repeats=100, random_state=42):
+    """
+
+    Args:
+        X:
+        y:
+        model:
+        n_splits:
+        n_repeats:
+        random_state:
+
+    Returns:
+        res:
+    """
+
+    np.random.seed(random_state)
+    random_states = np.random.randint(100000, size=(n_repeats))
+
+    y_preds = np.empty(shape=(y.shape[0], n_repeats))
+
+    for i in range(n_repeats):
+        kfold_res = kfold(X, y, model, n_splits=n_splits, random_state=random_states[i])
+        y_preds[:, i] = kfold_res.y_pred
+
+    res = RepeatedPredictionsResult(y, y_preds)
+    return res
+
+
+def get_x_y(df, features):
+    X = df[features].fillna(0).values
+    y = df['target'].values
+    return X, y
+
+
+def get_x(df, features):
+    X = df[features].fillna(0).values
+    return X
+
+
+def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.005, take_first=None, notebook=True,
+                    order_func=None):
+    X = df[features].fillna(0).values
+    y = df['target'].values
+    if df_val is not None:
+        y_val = df_val['target'].values
+
+    if order_func is None:
+        X_sc = StandardScaler().fit_transform(X)
+        lr = LogisticRegression(solver='liblinear')
+        lr.fit(X_sc, y)
+        weights = [(f, np.abs(w)) for f, w in zip(features, lr.coef_[0])]
+        weights = sorted(weights, key=operator.itemgetter(1))
+        features = list(list(zip(*weights))[0])[::-1]
+    else:
+        features = order_func(features, df)
+
+    if take_first:
+        features = features[:take_first]
+
+    new_features = []
+
+    best_res = None
+    hist = []
+
+    print('Feature selection. Step 1')
+
+    if notebook:
+        tqdm = tqdm_notebook
+
+    def update(new_features, cur_features, best_res, hist, action):
+        def condition(res, best_res):
+            if best_res is None:
+                if res.roc_aucs.mean() > 0.5 + threshold:
+                    return True
+                else:
+                    return False
+            elif res.roc_aucs.mean() - best_res.roc_aucs.mean() > threshold:
+                return True
+            else:
+                return False
+        X = df[cur_features].fillna(0).values
+        res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
+
+        if condition(res, best_res):
+            new_features = cur_features
+            best_res = res
+            d = {
+                'feature': f,
+                'action': action,
+                'score': res.roc_aucs.mean(),
+            }
+            if df_val is not None:
+                X = df_val[cur_features].fillna(0).values
+                val_res = repeated_kfold(X, y_val, model, n_splits=10, n_repeats=n_repeats)
+                d['score_val'] = val_res.roc_aucs.mean()
+            hist.append(d)
+        return new_features, best_res, hist
+
+    for f in tqdm(features):
+        cur_features = new_features + [f]
+        new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='added')
+
+    print('Feature selection. Step 2')
+    features = new_features.copy()
+
+    for f in features:
+        cur_features = [_f for _f in new_features if _f != f]
+        new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='removed')
+
+    return new_features, best_res, pd.DataFrame(hist)
+
+
+def train_test(X_1, y_1, X_2, y_2, model, random_state=42):
+    model.fit(X_1, y_1)
+    y_pred = model.predict_proba(X_2)[:, 1]
+    return PredictionsResult(y_2, y_pred)
