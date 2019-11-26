@@ -5,7 +5,6 @@ from shutil import rmtree
 from os import mkdir, remove
 
 from features import get_feature_build_func
-from models import get_model_func
 
 
 class StageManager(object):
@@ -22,14 +21,6 @@ class StageManager(object):
         'f-env': get_feature_build_func('env'),
         'f-coh': get_feature_build_func('coh'),
         # model stages
-        'm-lr': get_model_func('lr'),
-        'm-lr-feat-sel': get_model_func('lr-feat-sel'),
-        'm-cart': get_model_func('cart'),
-        'm-cart-feat-sel': get_model_func('cart-feat-sel'),
-        # 'm-rf': get_model_func('rf'),
-        # 'm-rf-feat-sel': get_model_func('rf-feat-sel'),
-        'm-xgb': get_model_func('xgb'),
-        'm-xgb-feat-sel': get_model_func('xgb-feat-sel'),
     }
 
     def __init__(self, data_path, out_path):

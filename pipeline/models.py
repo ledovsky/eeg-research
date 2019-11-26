@@ -25,75 +25,6 @@ def create_or_append(df, path):
         df.to_csv(path, index=False)
 
 
-def get_model_func(method):
-    do_feature_selection = False
-    if method == 'lr':
-        custom_model = LRModel()
-    elif method == 'lr-feat-sel':
-        custom_model = LRModel()
-        do_feature_selection = True
-    elif method == 'xgb':
-        custom_model = XGBModel()
-    elif method == 'xgb-feat-sel':
-        custom_model = XGBModel()
-        do_feature_selection = True
-    elif method == 'rf':
-        custom_model = RFModel()
-    elif method == 'rf-feat-sel':
-        custom_model = RFModel()
-        do_feature_selection = True
-    elif method == 'cart':
-        custom_model = TreeModel()
-    elif method == 'cart-feat-sel':
-        custom_model = TreeModel()
-        do_feature_selection = True
-    else:
-        raise Exception('Method is not in list of allowed methods - ', method)
-
-    def wrapped(data_path, out_path):
-
-        print('Started model stage -', method)
-
-        features_path = join(out_path, 'features')
-
-        models_res_dir = join(out_path, 'models_predict_samples')
-        if not exists(models_res_dir):
-            mkdir(models_res_dir)
-
-        res_path = join(out_path, 'results.csv')
-
-        for fn in listdir(features_path):
-            if fn[-3:] != 'csv':
-                continue
-            path = join(features_path, fn)
-
-            df = pd.read_csv(path)
-            features = [col for col in df.columns if col not in ['dataset', 'fn', 'target']]
-            if do_feature_selection:
-                features = select_features(df, features, custom_model)
-            X = df[features].fillna(0).values
-            y = df['target'].values
-            res = run_exper(X, y, custom_model)
-            res['model'] = method
-            res['features'] = fn[:-4]
-            create_or_append(pd.DataFrame([res]), res_path)
-
-            # save to sample predictions
-            def get_pred_df():
-                random_state = np.random.choice(np.arange(10000))
-                custom_model.run_cv(X, y, random_state=random_state)
-                prediction_df = pd.DataFrame({'y_pred': custom_model.y_pred, 'y_true': custom_model.y_true})
-                return prediction_df
-
-            prediction_df = get_pred_df()
-            prediction_df.to_csv(join(models_res_dir, method.replace('-', '_') + '_' + fn[:-4] + '.csv'), index=False)
-
-            prediction_df = get_pred_df()
-            prediction_df.to_csv(join(models_res_dir, method.replace('-', '_') + '_' + fn[:-4] + '_2.csv'), index=False)
-
-    return wrapped
-
-
 def run_exper(X, y, custom_model, outliers_rate=0.1, n_expers=100):
 
     custom_model.outliers_rate = outliers_rate
@@ -119,49 +50,6 @@ def run_exper(X, y, custom_model, outliers_rate=0.1, n_expers=100):
         'acc_std': accs.std()
     }
 
-
-def select_features(df, features, custom_model):
-    X = df[features].fillna(0).values
-    y = df['target'].values
-
-    X_sc = StandardScaler().fit_transform(X)
-    lr = LogisticRegression(solver='liblinear')
-    lr.fit(X_sc, y)
-    weights = [(f, np.abs(w)) for f, w in zip(features, lr.coef_[0])]
-    weights = sorted(weights, key=operator.itemgetter(1))
-    features = list(list(zip(*weights))[0])[::-1]
-
-    new_features = []
-
-    best_score = None
-
-    print('Feature selection. Step 1')
-
-    for f in tqdm(features):
-
-        cur_features = new_features + [f]
-
-        X = df[cur_features].fillna(0).values
-        cur_score = run_exper(X, y, custom_model, n_expers=20)['roc_auc_mean']
-
-        if best_score is None or (cur_score - best_score) > 0.005:
-            new_features = cur_features
-            best_score = cur_score
-
-    print('Feature selection. Step 2')
-    features = new_features.copy()
-
-    for f in tqdm(features):
-        cur_features = [_f for _f in new_features if _f != f]
-
-        X = df[cur_features].fillna(0).values
-        cur_score = run_exper(X, y, custom_model, n_expers=20)['roc_auc_mean']
-
-        if best_score is None or (cur_score - best_score) > 0.005:
-            new_features = cur_features
-            best_score = cur_score
-
-    return new_features
 
 
 class BaseModel(object):
