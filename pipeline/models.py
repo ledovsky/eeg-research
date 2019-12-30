@@ -380,11 +380,13 @@ def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.
                 'feature': f,
                 'action': action,
                 'score': res.roc_aucs.mean(),
+                'score_std': res.roc_aucs.std()
             }
             if df_val is not None:
                 X = df_val[cur_features].fillna(0).values
                 val_res = repeated_kfold(X, y_val, model, n_splits=10, n_repeats=n_repeats)
                 d['score_val'] = val_res.roc_aucs.mean()
+                d['score_val_std'] = val_res.roc_aucs.std()
             hist.append(d)
         return new_features, best_res, hist
 
