@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     data_path = '../../own_data/191104_depr_splits_features/60s_1_0_60'
     out_path = '../../own_data/191122_mdd_article'
-    clear = True
+    clear = False
 
 
     print('Started grid pipeline')
