@@ -9,6 +9,7 @@ import numpy as np
 from tqdm import trange, tqdm, tqdm_notebook
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold
@@ -212,6 +213,24 @@ class LRScaled(BaseEstimator):
     def predict_proba(self, X):
         X = self.transformer.transform(X)
         return self.lr.predict_proba(X)
+
+class SVMScaled(BaseEstimator):
+    def __init__(self, random_state=42, **kwargs):
+        self.transformer = StandardScaler()
+        self.model = SVC(kernel='linear', random_state=random_state, probability=True)
+
+    def fit(self, X, y):
+        X = self.transformer.fit_transform(X, y)
+        self.model.fit(X, y)
+        return self
+
+    def predict(self, X):
+        X = self.transformer.transform(X)
+        return self.model.predict(X)
+
+    def predict_proba(self, X):
+        X = self.transformer.transform(X)
+        return self.model.predict_proba(X)
 
 
 class PredictionsResult:
