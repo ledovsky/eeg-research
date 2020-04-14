@@ -1,7 +1,13 @@
+"""
+Example usage:
+python aut_preproc/main.py \
+    --data-path ../../raw_data/autists \
+    --out-path ../../preproc_data/autists
+"""
+
 import argparse
 import os
-from os.path import join, exists
-import re
+from os.path import join
 
 import pandas as pd
 
@@ -17,52 +23,36 @@ def main():
 
     create_if_necessary(out_path)
 
+    results = []
     to_exclude = []
 
     for i, row in path_df.iterrows():
 
         path_to_save = join(out_path, row['fn'])
-        if skip_existing and exists(path_to_save):
-            continue
-
-        print(row['fn'])
-
-        # Currently we can not work with these records
-        if row['fn'][:-4] in ['17m_as_fon', '15m_lp_fon', '17m_au_fon', 'dev11_og']:
-            print('Unusual channel names', row['fn'])
-            to_exclude.append(i)
-            continue
-        if row['fn'][:-4] == 'komleva_org_asd_f':
-            print('Cant read KOMLEVA_ORG_ASD_F')
-            to_exclude.append(i)
-            continue
-
-        if row['fn'][:-4] == 'andrey_6_norm_new':
-            print('ANDREY_6_NORM_new - no A1-A2')
-            to_exclude.append(i)
-            continue
-
-        if row['fn'][:-4] in ['GOLOSHAPOV_PETY_6_FON_long'.lower(), 'KISLYKOV NIKITA 3_FON_OPEN'.lower()]:
-            print(row['fn'], 'file duplicated')
-            to_exclude.append(i)
-            continue
-
-        # if row['fn'][:-4] == 'MALE_6_ASD_new':
-        #     print('Strange record')
-        #     to_exclude.append(i)
-        #     continue
 
         raw_file = read_raw_edf(row['full_path'], verbose=False, preload=True)
         df = raw_file.to_data_frame()
-        df = change_ref_to_a1(df, row['fn'])
 
+        try:
+            df, res = process_data(df)
+            results.append(['OK', row['full_path'], row['fn'], res])
+        except Exception as e:
+            results.append(['FAILURE', row['full_path'], row['fn'], str(type(e)) + ': ' + str(e)])
+            to_exclude.append(i)
+            continue
+
+        df = change_reference(df, 'cz')
         # reduce sfreq to 125Hz
         df = df.iloc[::2, :]
         df.to_csv(path_to_save)
 
     del path_df['full_path']
     path_df = path_df.loc[~path_df.index.isin(to_exclude)]
+    path_df['sfreq'] = 125
     path_df.to_csv(join(out_path, 'path_file.csv'), index=False)
+
+    df_results = pd.DataFrame(results, columns=['status', 'full_path', 'fn', 'comment'])
+    df_results.to_csv(join(out_path, 'processing_log.csv'), index=False)
 
 
 def parse_args():
@@ -87,87 +77,87 @@ def create_if_necessary(path):
         os.makedirs(path)
 
 
-def extract_epoches(path_file_path, out_path, fn='', debug=False):
-
-    create_if_necessary(out_path)
-
-    path_df = pd.read_csv(path_file_path)
-
-    for i, row in path_df.iterrows():
-        path_to_save = join(out_path, row['fn'] + '.csv')
-        print(row['fn'])
-        if row['fn'] in ['17m_As_fon', '15m_Lp_fon', '17m_Au_fon']:
-            print('Error in fon, skip')
-            continue
-        if row['fn'] == 'KOMLEVA_ORG_ASD_F':
-            print('Cant read KOMLEVA_ORG_ASD_F')
-            continue
-        if row['fn'] == 'dev11_og':
-            print('dev11_og - something wrong in column names')
-            continue
-        if row['fn'] == 'ANDREY_6_NORM_new':
-            print('ANDREY_6_NORM_new - no A1-A2')
-            continue
-        raw_file = read_raw_edf(row['full_path'], verbose=False)
-        df = raw_file.to_data_frame()
-        df = change_ref_to_a1(df, row['fn'])
-        # df = change_reference(df, 'cz')
-        # reduce sfreq to 125Hz
-        df = df.iloc[::2, :]
-        df.to_csv(path_to_save)
-
-
-def find_channels(s):
-    return re.findall(r'([a-z0-9]+)-([a-z0-9]+)', s.lower())[0]
-
-
-def change_ref_to_a1(df, fn):
-    channels = {}
-    channels_rev = {}
-    for col in df.columns:
-        if 'eeg' not in col.lower():
-            continue
-        ch1, ch2 = find_channels(col)
-        channels[col] = (ch1, ch2)
-        channels_rev[(ch1, ch2)] = col
-
-    if ('a1', 'a2') in channels_rev:
-        col = channels_rev[('a1', 'a2')]
-        a1_a2 = df[col]
-
-    elif ('a2', 'a1') in channels_rev:
-        col = channels_rev[('a2', 'a1')]
-        a1_a2 = - df[col]
-    else:
-        print('Error in ' + fn)
-        return None
-
-    new_df = df.iloc[:, :0].copy()
-
-    for col in df.columns:
-        if 'eeg' not in col.lower():
-            continue
-        ch1, ch2 = channels[col]
-        if ch1 == 'a1' or ch1 == 'a2':
-            continue
-        if ch2 == 'a1':
-            new_df[ch1] = df[col]
-        elif ch2 == 'a2':
-            sig = df[col] - a1_a2
-            new_df[ch1] = sig
-
-        new_df['a2'] = - a1_a2
-        new_df['a1'] = 0
-
-    return new_df
-
-
 def change_reference(df, new_ref):
+    df_old = df.copy()
     df = df.copy()
     for col in df.columns:
-        df[col] = df[col] - df[new_ref]
+        df[col] = df[col] - df_old[new_ref]
 
     return df
+
+
+def process_data(df):
+    """
+    Логика
+
+    - Приводим к нижнему регистру
+    - Убираем префикс eeg
+    - Ищем каналы без префиксов eeg. Если нашли 21 - все ок
+    - Ищем канал a1-a2 или a2-a1. Если находим, создаем a1 и a2
+    - Если есть каналы a2-a1 и а1, либо a1-a2 и a2 обрабатываем это отдельно
+    - Ищем остальные каналы с префиксом eeg и приводим их к общему референсу
+
+    Args:
+        df: pd.DataFrame
+
+    Returns:
+        out_df: pd.DataFrame
+
+    """
+
+    df.set_index('time', inplace=True)
+
+    desired_columns = ['fp1', 'fp2', 'f7', 'f3', 'fz', 'f4', 'f8', 't3', 'c3', 'cz', 'c4',
+                       't4', 't5', 'p3', 'pz', 'p4', 't6', 'o1', 'o2']
+
+    df.columns = [col.lower() for col in df.columns]
+    df.columns = [col.replace('eeg ', '') for col in df.columns]
+
+    a1_ref_columns = [(col, col + '-a1') for col in desired_columns]
+    a2_ref_columns = [(col, col + '-a2') for col in desired_columns]
+
+    not_found = []
+    for col in desired_columns:
+        if col not in df.columns:
+            not_found.append(col)
+
+    if len(not_found) == 0:
+        return df[desired_columns], 'all channels found'
+
+    a1_a2_str = ''
+    if 'a1-a2' in df.columns:
+        if 'a2' not in df.columns:
+            df['a2'] = 0
+        else:
+            a1_a2_str = '; a1-a2 + a2 present'
+        df['a1'] = df['a1-a2'] + df['a2']
+    elif 'a2-a1' in df.columns:
+        if 'a1' not in df.columns:
+            df['a1'] = 0
+        else:
+            a1_a2_str = '; a2-a1 + a1 present'
+        df['a2'] = df['a2-a1'] + df['a1']
+    else:
+        raise Exception('no ref found or not enough columns' + '; ' + '|'.join(not_found))
+
+    for col, ref_col in a1_ref_columns:
+        if ref_col in df.columns:
+            df[col] = df[ref_col] + df['a1']
+    for col, ref_col in a2_ref_columns:
+        if ref_col in df.columns:
+            df[col] = df[ref_col] + df['a2']
+
+    not_found = []
+    for col in desired_columns:
+        if col not in df.columns:
+            not_found.append(col)
+
+    if len(not_found) == 0:
+        return df[desired_columns], 'all channels found; A1 and A2 references changed' + a1_a2_str
+
+    else:
+        raise Exception('not enough columns; A1 and A2 references changed' + a1_a2_str +
+                        '; ' + '|'.join(not_found))
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ import mne
 from mne.io import read_raw_egi
 
 from paths import get_path_df
-from utils import get_events, get_epoch, get_epoches
+from data_preparation import get_events, get_epoch, get_epoches
 from electrodes import electrode_mapping, electrodes
 
 

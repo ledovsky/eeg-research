@@ -28,17 +28,17 @@ class PathDataFrameConstructor(object):
             d['dataset_name'] = dataset_name
 
             d['sfreq'] = sample.info['sfreq']
-            d['channels'] = '|'.join(sorted(sample.info['ch_names']))
+            # d['channels'] = '|'.join(sorted(sample.info['ch_names']))
             d['n_channels'] = len(sample.info['ch_names'])
-            found = re.findall('\d+', fn)[0]
+            found = re.findall('\d+', fn)
             if found:
-                d['age'] = found
+                d['age'] = found[0]
             else:
                 d['age'] = np.nan
 
             eeg_channels = [ch for ch in sample.info['ch_names'] if 'EEG' in ch]
 
-            d['channels_eeg'] = '|'.join(sorted(eeg_channels))
+            # d['channels_eeg'] = '|'.join(sorted(eeg_channels))
             d['n_channels_eeg'] = len(eeg_channels)
 
             d['seconds'] = sample.get_data().shape[1] / d['sfreq']

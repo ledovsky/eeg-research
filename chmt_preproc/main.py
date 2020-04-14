@@ -1,3 +1,10 @@
+"""
+Example usage:
+python chmt_preproc/main.py \
+    --data-path ../../raw_data/chmt \
+    --out-path ../../preproc_data/chmt
+"""
+
 import argparse
 import os
 from os.path import join
@@ -41,6 +48,7 @@ def main():
 
     del path_df['full_path']
     path_df = path_df.loc[~path_df.index.isin(to_exclude)]
+    path_df['sfreq'] = 125
     path_df.to_csv(join(out_path, 'path_file.csv'), index=False)
 
     df_results = pd.DataFrame(results, columns=['status', 'full_path', 'fn', 'comment'])
@@ -70,9 +78,10 @@ def create_if_necessary(path):
 
 
 def change_reference(df, new_ref):
+    df_old = df.copy()
     df = df.copy()
     for col in df.columns:
-        df[col] = df[col] - df[new_ref]
+        df[col] = df[col] - df_old[new_ref]
 
     return df
 
@@ -95,14 +104,17 @@ def process_data(df):
         out_df: pd.DataFrame
 
     """
+
+    df.set_index('time', inplace=True)
+
     desired_columns = ['fp1', 'fp2', 'f7', 'f3', 'fz', 'f4', 'f8', 't3', 'c3', 'cz', 'c4',
-                       't4', 't5', 'p3', 'pz', 'p4', 't6', 'o1', 'o2', 'a2', 'a1']
+                       't4', 't5', 'p3', 'pz', 'p4', 't6', 'o1', 'o2']
 
     df.columns = [col.lower() for col in df.columns]
     df.columns = [col.replace('eeg ', '') for col in df.columns]
 
-    a1_ref_columns = [(col, col + '-a1') for col in desired_columns if col not in ['a1', 'a2']]
-    a2_ref_columns = [(col, col + '-a2') for col in desired_columns if col not in ['a1', 'a2']]
+    a1_ref_columns = [(col, col + '-a1') for col in desired_columns]
+    a2_ref_columns = [(col, col + '-a2') for col in desired_columns]
 
     not_found = []
     for col in desired_columns:
@@ -112,16 +124,21 @@ def process_data(df):
     if len(not_found) == 0:
         return df[desired_columns], 'all channels found'
 
+    a1_a2_str = ''
     if 'a1-a2' in df.columns:
         if 'a2' not in df.columns:
             df['a2'] = 0
+        else:
+            a1_a2_str = '; a1-a2 + a2 present'
         df['a1'] = df['a1-a2'] + df['a2']
     elif 'a2-a1' in df.columns:
         if 'a1' not in df.columns:
             df['a1'] = 0
+        else:
+            a1_a2_str = '; a2-a1 + a1 present'
         df['a2'] = df['a2-a1'] + df['a1']
     else:
-        raise Exception('no ref found or not enough columns')
+        raise Exception('no ref found or not enough columns' + '; ' + '|'.join(not_found))
 
     for col, ref_col in a1_ref_columns:
         if ref_col in df.columns:
@@ -136,10 +153,11 @@ def process_data(df):
             not_found.append(col)
 
     if len(not_found) == 0:
-        return df[desired_columns], 'all channels found, A1 and A2 references changed'
+        return df[desired_columns], 'all channels found; A1 and A2 references changed' + a1_a2_str
 
     else:
-        raise Exception('not enough columns, A1 and A2 references changed')
+        raise Exception('not enough columns; A1 and A2 references changed' + a1_a2_str +
+                        '; ' + '|'.join(not_found))
 
 
 if __name__ == '__main__':

@@ -14,14 +14,7 @@ from tqdm import tqdm
 from mne.connectivity import spectral_connectivity, phase_slope_index
 
 
-def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
-
-    def unity_func(x):
-        return x
-
-    if df_filter_func is None:
-        df_filter_func = unity_func
-
+def get_func_by_method(method_name):
     methods = {
         'coh': partial(get_mne_spec_con_feats, band=None, method='coh'),
         'coh-alpha': partial(get_mne_spec_con_feats, band='alpha', method='coh'),
@@ -34,46 +27,18 @@ def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
         'bands': get_bands_feats,
         'psi': get_psi_feats,
     }
+    if method_name in methods:
+        return methods[method_name]
+    else:
+        raise ValueError('Features method is not in allowed list')
 
-    f = methods[method_name]
 
-    def wrapped(data_path, out_path):
-
-        print('Started features stage -', method_name)
-
-        path_file_path = join(data_path, 'path_file.csv')
-        path_df = pd.read_csv(path_file_path)
-        # required columns check
-        assert all([col in path_df.columns for col in ['fn', 'target']])
-
-        features_path = get_feature_path(method_name, out_path)
-
-        new_rows = []
-
-        for i, row in tqdm(path_df.iterrows(), total=len(path_df)):
-            if verbose and i % 10 == 0:
-                print('At file {}'.format(i + 1))
-            try:
-                path = join(data_path, row['fn'])
-                df = pd.read_csv(path, index_col='time')
-                df = df_filter_func(df)
-                new_row = f(df)
-            except AssertionError:
-                print('Error in file ' + row['fn'])
-                continue
-            except FileNotFoundError:
-                print('Not found - ' + row['fn'])
-                continue
-
-            for col in ['fn', 'target']:
-                new_row[col] = row[col]
-            new_rows.append(new_row)
-
-        res_df = pd.DataFrame(new_rows)
-
-        res_df.to_csv(features_path, index=False)
-
-    return wrapped
+def calc_features_dict(df, method_names):
+    d = {}
+    for method_name in method_names:
+        f = get_func_by_method(method_name)
+        d.update(f(df))
+    return d
 
 
 band_bounds = {
@@ -131,7 +96,7 @@ def get_filter(sfreq=125., band='alpha'):
 
     freq = [0., f_low_lb, f_low_ub, f_high_lb, f_high_ub, nyq]
     gain = [0, 0, 1, 1, 0, 0]
-    n = int(round(5 * sfreq)) + 1
+    n = int(round(1 * sfreq)) + 1
 
     filt = signal.firwin2(n, freq, gain, nyq=nyq)
 
@@ -250,3 +215,68 @@ def get_psi_feats(df, sfreq=125., band='alpha'):
         for j in range(i):
             d[get_col_name('psi', band, electrodes[i], electrodes[j])] = psi[i, j, 0]
     return d
+
+
+# Legacy
+
+def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
+
+    def unity_func(x):
+        return x
+
+    if df_filter_func is None:
+        df_filter_func = unity_func
+
+    methods = {
+        'coh': partial(get_mne_spec_con_feats, band=None, method='coh'),
+        'coh-alpha': partial(get_mne_spec_con_feats, band='alpha', method='coh'),
+        'coh-beta': partial(get_mne_spec_con_feats, band='beta', method='coh'),
+        'coh-theta': partial(get_mne_spec_con_feats, band='theta', method='coh'),
+        'env': partial(get_envelope_feats, band=None),
+        'env-alpha': partial(get_envelope_feats, band='alpha'),
+        'env-beta': partial(get_envelope_feats, band='beta'),
+        'env-theta': partial(get_envelope_feats, band='theta'),
+        'bands': get_bands_feats,
+        'psi': get_psi_feats,
+    }
+
+    f = methods[method_name]
+
+    def wrapped(data_path, out_path):
+
+        print('Started features stage -', method_name)
+
+        path_file_path = join(data_path, 'path_file.csv')
+        path_df = pd.read_csv(path_file_path)
+        # required columns check
+        assert all([col in path_df.columns for col in ['fn', 'target']])
+
+        features_path = get_feature_path(method_name, out_path)
+
+        new_rows = []
+
+        for i, row in tqdm(path_df.iterrows(), total=len(path_df)):
+            if verbose and i % 10 == 0:
+                print('At file {}'.format(i + 1))
+            try:
+                path = join(data_path, row['fn'])
+                df = pd.read_csv(path, index_col='time')
+                df = df_filter_func(df)
+                new_row = f(df)
+            except AssertionError:
+                print('Error in file ' + row['fn'])
+                continue
+            except FileNotFoundError:
+                print('Not found - ' + row['fn'])
+                continue
+
+            for col in ['fn', 'target']:
+                new_row[col] = row[col]
+            new_rows.append(new_row)
+
+        res_df = pd.DataFrame(new_rows)
+
+        res_df.to_csv(features_path, index=False)
+
+    return wrapped
+
