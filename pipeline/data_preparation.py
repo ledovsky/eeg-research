@@ -19,7 +19,7 @@ from .features import calc_features_dict
 
 
 def get_train_df(features_df, path_df):
-    assert 'target' in path_df == True, 'No target in path_df'
+    assert ('target' in path_df.columns) == True, 'No target in path_df'
     res_df = features_df.merge(path_df[['fn', 'target']], on='fn')
     return res_df
 

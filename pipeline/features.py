@@ -167,6 +167,7 @@ def get_envelope_feats(df, sfreq=125., band='alpha'):
     electrodes = df.columns
 
     df = df.copy()
+    new_df = pd.DataFrame()
     if band is not None:
         filt = get_filter(sfreq, band)
     else:
@@ -175,10 +176,10 @@ def get_envelope_feats(df, sfreq=125., band='alpha'):
     for el in electrodes:
         sig = df[el]
         if filt is not None:
-            sig = np.convolve(filt, df[el], 'same')
+            sig = np.convolve(filt, df[el], 'valid')
         sig = hilbert(sig)
         sig = np.abs(sig)
-        df[el + '_env'] = sig
+        new_df[el + '_env'] = sig
 
     d = {}
 
@@ -187,8 +188,8 @@ def get_envelope_feats(df, sfreq=125., band='alpha'):
     for idx_1, idx_2 in itertools.combinations(range(len(electrodes)), 2):
         el_1 = idx_electrodes_dict[idx_1]
         el_2 = idx_electrodes_dict[idx_2]
-        series_1 = df[el_1 + '_env'].values[500:-500]
-        series_2 = df[el_2 + '_env'].values[500:-500]
+        series_1 = new_df[el_1 + '_env']
+        series_2 = new_df[el_2 + '_env']
         d[get_col_name('env', band, el_1, el_2)] = pearsonr(series_1, series_2)[0]
 
     return d
