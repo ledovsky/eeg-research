@@ -202,7 +202,8 @@ class LRScaled(BaseEstimator):
         self.lr = LogisticRegression(random_state=random_state, solver='liblinear', **kwargs)
 
     def fit(self, X, y):
-        X = self.transformer.fit_transform(X, y)
+        StandardScaler().fit_transform(X)
+        X = self.transformer.fit_transform(X)
         self.lr.fit(X, y)
         return self
 
@@ -297,7 +298,6 @@ def kfold(X, y, model, n_splits=10, random_state=42, to_drop=None):
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
 
     for train_idx, test_idx in cv.split(X, y):
-
         # TODO: check how to_drop works
         if to_drop:
             train_idx = [idx for idx in train_idx if idx not in to_drop]
