@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -48,3 +49,18 @@ def plot_violins(df, features, labels=None, ax=None):
     ax.set_ylabel('')
 
     return ax
+
+
+def plot_lr_weights(model, features, ax=None):
+
+    if ax is None:
+        fig = plt.figure(figsize=[6, 0.5 * len(features)])
+        ax = plt.gca()
+
+    pal = sns.color_palette()
+
+    idx = np.argsort(model.coef_[0])
+
+    coefs = model.coef_[0][idx]
+    colors = [pal[0] if c > 0 else pal[3] for c in coefs]
+    ax.barh(np.array(features)[idx], coefs, color=colors)
