@@ -1,6 +1,6 @@
 """
 Example usage:
-python aut_preproc/main.py \
+PYTHONPATH=./ python aut_preproc/main.py \
     --data-path ../../raw_data/autists \
     --out-path ../../preproc_data/autists
 """
@@ -13,7 +13,7 @@ import pandas as pd
 
 from mne.io import read_raw_edf
 
-from paths import get_path_df
+from .paths import get_path_df
 
 
 def main():
