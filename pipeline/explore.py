@@ -4,6 +4,8 @@ from sklearn.metrics import roc_auc_score
 
 def feat_performance(df, features=None, apply_sort=True):
     rows = []
+    if features is None:
+        features = [col for col in df.columns if col not in ['target', 'fn']]
     for feat in features:
         roc_auc = roc_auc_score(df['target'], df[feat])
         roc_auc = max(roc_auc, 1 - roc_auc)

@@ -21,7 +21,6 @@ own_data/autists_splits
 - part_1
 - part_2
 
-
 Example how to run:
 PYTHONPATH=./ python aut_experiments/200708_feats_on_clusters.py \
     --data-path ../../preproc_data/autists \
@@ -92,8 +91,8 @@ feature_files = {
     'env_beta.csv': ['env-beta'],
     'env_theta.csv': ['env-theta'],
     'bands.csv': ['bands'],
-    'set_1.csv': ['bands', 'coh-alpha', 'coh-beta', 'env-alpha', 'env-beta'],
-    'set_2.csv': ['bands', 'coh-alpha', 'coh-beta', 'coh-theta', 'env-alpha', 'env-beta', 'env-theta'],
+    'set_1.csv': ['coh-alpha', 'coh-beta', 'env-alpha', 'env-beta'],
+    'set_2.csv': ['coh-alpha', 'coh-beta', 'coh-theta', 'env-alpha', 'env-beta', 'env-theta'],
 }
 
 
