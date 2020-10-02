@@ -24,8 +24,8 @@ own_data/autists_splits
 Example how to run:
 PYTHONPATH=./ python aut_experiments/200708_feats_on_clusters.py \
     --data-path ../../preproc_data/autists \
-    --out-path ../own_data/200708_aut_clust_v1 \
-    --cluster-type 0 \
+    --out-path ../own_data/200823_aut_clust_v3 \
+    --cluster-type 2 \
     --debug
 
 """
@@ -36,7 +36,7 @@ from os import mkdir
 
 import pandas as pd
 
-from pipeline.data_preparation import FeatureBuilder, get_train_df
+from pipeline.data_preparation import FeatureBuilder
 
 """
 (F3, F7, T3, C3);     (F4, F8, T4, C4);   (T5, P3, O1);  (T6, P4, O2);  (Fz, Cz, Pz)
@@ -79,21 +79,27 @@ clusters_2 = [
 def sum_by_clusters(df, clusters):
     new_df = df[[]].copy()
     for i, clust in enumerate(clusters):
-        new_ch_name = 'clust_' + str(i)
+        new_ch_name = 'clust' + str(i)
         new_df[new_ch_name] = df[list(clust)].sum(axis=1)
     return new_df
 
 feature_files = {
-    'coh_alpha.csv': ['coh-alpha'],
-    'coh_beta.csv': ['coh-beta'],
-    'coh_theta.csv': ['coh-theta'],
-    'env_alpha.csv': ['env-alpha'],
-    'env_beta.csv': ['env-beta'],
-    'env_theta.csv': ['env-theta'],
-    'bands.csv': ['bands'],
-    'set_1.csv': ['coh-alpha', 'coh-beta', 'env-alpha', 'env-beta'],
-    'set_2.csv': ['coh-alpha', 'coh-beta', 'coh-theta', 'env-alpha', 'env-beta', 'env-theta'],
+    'coh_alpha.xlsx': ['coh-alpha'],
+    'coh_beta.xlsx': ['coh-beta'],
+    'coh_theta.xlsx': ['coh-theta'],
+    'env_alpha.xlsx': ['env-alpha'],
+    'env_beta.xlsx': ['env-beta'],
+    'env_theta.xlsx': ['env-theta'],
+    # 'bands.csv': ['bands'],
+    # 'set_1.csv': ['coh-alpha', 'coh-beta', 'env-alpha', 'env-beta'],
+    # 'set_2.csv': ['coh-alpha', 'coh-beta', 'coh-theta', 'env-alpha', 'env-beta', 'env-theta'],
 }
+
+
+def get_train_df(features_df, path_df):
+    assert ('target' in path_df.columns) == True, 'No target in path_df'
+    res_df = features_df.merge(path_df[['fn', 'target', 'age']], on='fn')
+    return res_df
 
 
 def main():
@@ -143,7 +149,7 @@ def main():
         for out_fn, builder in feature_builder_dict.items():
             features_df = builder.get_df()
             train_df = get_train_df(features_df, path_df)
-            train_df.to_csv(join(out_path, split_type, out_fn), index=False)
+            train_df.to_excel(join(out_path, split_type, out_fn), index=False)
         if debug:
             break
 
