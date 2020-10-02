@@ -12,7 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold
+from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold, train_test_split
 from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn.preprocessing import StandardScaler
 
@@ -348,8 +348,8 @@ def get_x(df, features):
     return X
 
 
-def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.005, take_first=None, notebook=True,
-                    order_func=None):
+def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.005,
+                    take_first=None, notebook=True, order_func=None, method='kfold'):
     X = df[features].fillna(0).values
     y = df['target'].values
     if df_val is not None:
@@ -390,8 +390,11 @@ def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.
             else:
                 return False
         X = df[cur_features].fillna(0).values
-        res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
-
+        if method == 'kfold':
+            res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
+        elif method == 'train_test':
+            res = repeated_train_test(X, y, model, test_size=0.4, n_repeats=n_repeats)
+        print(res.roc_aucs.mean(), res.accs.mean())
         if condition(res, best_res):
             new_features = cur_features
             best_res = res
@@ -403,13 +406,17 @@ def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.
             }
             if df_val is not None:
                 X = df_val[cur_features].fillna(0).values
-                val_res = repeated_kfold(X, y_val, model, n_splits=10, n_repeats=n_repeats)
+                if method == 'kfold':
+                    val_res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
+                elif method == 'train_test':
+                    val_res = repeated_train_test(X, y, model, test_size=0.4, n_repeats=n_repeats)
                 d['score_val'] = val_res.roc_aucs.mean()
                 d['score_val_std'] = val_res.roc_aucs.std()
             hist.append(d)
         return new_features, best_res, hist
 
     for f in tqdm(features):
+        print(f)
         cur_features = new_features + [f]
         new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='added')
 
@@ -417,6 +424,7 @@ def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.
     features = new_features.copy()
 
     for f in features:
+        print(f)
         cur_features = [_f for _f in new_features if _f != f]
         new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='removed')
 
@@ -427,3 +435,32 @@ def train_test(X_1, y_1, X_2, y_2, model, random_state=42):
     model.fit(X_1, y_1)
     y_pred = model.predict_proba(X_2)[:, 1]
     return PredictionsResult(y_2, y_pred)
+
+
+def repeated_train_test(X, y, model, test_size=0.15, n_repeats=100, random_state=42):
+    """
+
+    Args:
+        X: 2d numpy array of features
+        y: 1d numpy array of targets
+        model: classifier
+        test_size (float, optional): Percentage of data that is used for validation. Defaults to 0.15.
+        n_repeats (int, optional): Defaults to 100.
+        random_state (int, optional): Defaults to 42.
+
+    Returns:
+        res:
+    """
+    np.random.seed(random_state)
+    random_states = np.random.randint(100000, size=2*n_repeats)
+    _, y_test = train_test_split(y, test_size=test_size)
+    y_preds = np.empty(shape=(y_test.shape[0], n_repeats))
+
+    for i in range(n_repeats):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_states[2*i])
+        train_test_res = train_test(X_train, y_train, X_test, y_test, model, random_state=random_states[2*i+1])
+
+        y_preds[:, i] = train_test_res.y_pred
+
+    res = RepeatedPredictionsResult(y_test, y_preds)
+    return res
