@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
             features = [col for col in df.columns if col not in ['dataset', 'fn', 'target']]
 
-            features_selected, result = select_features(df, features, model)
+            features_selected, result, _ = select_features(df, features, model)
 
             d = {
                 'model': model_name,
