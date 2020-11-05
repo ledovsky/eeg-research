@@ -1,28 +1,43 @@
 from numpy import random
 import pandas as pd
 import numpy as np
-from scipy.sparse.construct import rand
+from tqdm import tqdm_notebook
 
 from sklearn.model_selection import LeaveOneOut, KFold, train_test_split
 from sklearn.metrics import roc_auc_score, accuracy_score
+from tqdm import notebook
 
-from .models import PredictionsResult, train_test, select_features, get_x_y
+from .models import PredictionsResult, train_test, select_features, get_x_y, get_tqdm_iter
 
 
-def train_test_val(df, features, model, test_size=15, verbose=False, random_state=42):
+def train_test_val(df, features, model, test_size=15, metric='roc-auc', random_state=42, verbose=False, p_bar=0):
     train_idx, test_idx = train_test_split(df.index, test_size=test_size, stratify=df['target'], random_state=random_state)
-    new_features, _, _ = select_features(df.loc[train_idx], features, model, verbose=verbose, n_repeats=1)
+
+    if verbose:
+        print('Data split.')
+        print('train indices:', np.sort(train_idx.values), 
+              'train indices:', np.sort(test_idx.values), sep='\n')
+        print()
+
+    new_features, _, _ = select_features(df.loc[train_idx], features, model, metric, n_repeats=1, verbose=verbose, p_bar=p_bar)
     X_1, y_1 = get_x_y(df.loc[train_idx], new_features)
     X_2, y_2 = get_x_y(df.loc[test_idx], new_features)
     return new_features, train_test(X_1, y_1, X_2, y_2, model)
 
 
-def nested_cross_val(df, features, model, n_splits=10, n_repeats=10, verbose=False, random_state=42):
+def nested_cross_val(df, features, model, n_splits=10, n_repeats=10, metric='roc-auc', random_state=42, verbose=False, p_bar=1):
     np.random.seed(random_state)
     y_preds = np.empty((df.shape[0]))
     cv = KFold(n_splits=n_splits, shuffle=True)
-    for train_idx, test_idx in cv.split(df):
-        new_features, _, _, = select_features(df.loc[train_idx], features, model, n_repeats=n_repeats, verbose=verbose)
+    for train_idx, test_idx in get_tqdm_iter(cv.split(df), p_bar, total=n_splits):
+
+        if verbose:
+            print('Data split.')
+            print('train indices:', np.sort(train_idx), 
+                'train indices:', np.sort(test_idx), sep='\n')
+            print()
+
+        new_features, _, _, = select_features(df.loc[train_idx], features, model, metric, n_repeats=n_repeats, verbose=verbose, p_bar=p_bar-1)
         X_train, y_train = get_x_y(df.loc[train_idx], new_features)
         X_test, _ = get_x_y(df.loc[test_idx], new_features)
         model.fit(X_train, y_train)
@@ -30,25 +45,27 @@ def nested_cross_val(df, features, model, n_splits=10, n_repeats=10, verbose=Fal
     return PredictionsResult(df['target'], y_preds)
 
 
-def repeated_train_test(df, features, model, test_size=15, verbose=False, n_repeats=10,
-                        random_state=42):
+def repeated_train_test(df, features, model, test_size=15, n_repeats=10, metric='roc-auc',
+                        random_state=42, verbose=False, p_bar=1):
     np.random.seed(random_state)
     scores = []
     best_features = []
     random_states = np.random.randint(100000, size=n_repeats)
-    for i in range(n_repeats):
-        feats, score = train_test_val(df, features, model, test_size, verbose, random_states[i])
+    for i in get_tqdm_iter(range(n_repeats), p_bar):
+        if verbose:
+            print(f'Iteration {i}.')
+        feats, score = train_test_val(df, features, model, test_size, metric, random_states[i], verbose, p_bar-1)
         best_features.append(feats)
         scores.append(score)
     return best_features, scores
 
 
-def multi_segment_train_test(df, features, model, test_size=15, verbose=False, random_state=42):
+def multi_segment_train_test(df, features, model, test_size=15, metric='roc-auc', verbose=None, random_state=42):
     idx = df['fn'].drop_duplicates()
     fn_df = df.set_index('fn')
     targets = fn_df[~fn_df.index.duplicated('first')]['target'][idx] # Get target for each id
     train_ids, test_ids = train_test_split(idx, test_size=test_size, stratify=targets, random_state=random_state)
-    new_features, _, _ = select_features(fn_df.loc[train_ids], features, model, verbose=verbose, n_repeats=1)
+    new_features, _, _ = select_features(fn_df.loc[train_ids], features, model, metric, verbose=verbose, n_repeats=1)
     X_1, y_1 = get_x_y(fn_df.loc[train_ids], new_features)
     X_2, y_2 = get_x_y(fn_df.loc[test_ids], new_features)
     return new_features, train_test(X_1, y_1, X_2, y_2, model)

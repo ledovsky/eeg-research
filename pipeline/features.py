@@ -65,12 +65,17 @@ def merge_dfs(dfs):
     return res_df
 
 
-def get_merged_df(base_path, feature_methods):
+def get_merged_df(*args):
+    """
+    Loads merged dataframe from csv-files for each path.
+    Arguments are paths for csv-files followed by the list of feature methods.
+    """
+    feature_methods = args[-1]
     dfs = []
-    for method in feature_methods:
-        dfs.append(pd.read_csv(get_feature_path(method, base_path)))
-    df = merge_dfs(dfs)
-    return df
+    for path in args[:-1]:
+        features = [pd.read_csv(get_feature_path(method, path)) for method in feature_methods]
+        dfs.append(merge_dfs(features))
+    return pd.concat(dfs, ignore_index=True)
 
 
 def get_col_name(method, band, ch_1, ch_2=None):
