@@ -57,7 +57,7 @@ def apply_filter(filt, sig):
     #sig = np.abs(sig)
     return sig
 
-def get_clusters(X, n=4, dist=cdist, dist_mode='cos', crit = 0.00001, alg_mode = None, swap = False):
+def get_clusters(X, n=4, dist=cdist, dist_mode='cos', crit = 0.00001, alg_mode = None, swap = False, starting_mode = None):
     """
     Args: 
         X: np.array, (n_maximas, n_channels)
@@ -74,7 +74,7 @@ def get_clusters(X, n=4, dist=cdist, dist_mode='cos', crit = 0.00001, alg_mode =
         initial_random state: np.array, (n, n_channels)
         
     """
-def get_clusters(X, n=4, dist=cdist, dist_mode='cos', crit = 0.00001, alg_mode = None, swap = False, starting_mode = None):
+
     x = X.shape[0]
     starting_points = np.random.randint(0,x,n)
 
@@ -204,7 +204,18 @@ def assign_labels_auto(centroids_0, centroids, labels_0, n=4):
         labels_0[i]=labels[labels_0[i]]
     return labels_0, labels, distances
 
-def calc_microstates(data, window, no_peak_points='ffill',bounds = [8,13], sfreq=125., clustering_alg='k_means', normalize=False, n=4, dist=cdist):
+def compute_gfp_maximas(X, window , norm):
+    # channels goes in 1 axis
+    if 'L2' == norm:
+        gfp = np.var(X, axis=1)
+    elif 'L1' == norm:
+        gfp = np.sum(np.abs(X - np.outer(np.mean(X, axis = 1 ),np.ones(X.shape[1]))), axis = 1 )
+    maximas = argrelextrema(gfp, np.greater, order=window)
+    maximal_states = X[maximas[0],:]
+    return gfp, maximas, maximal_states
+
+
+def calc_microstates(data, window, no_peak_points='ffill',bounds = [8,13], sfreq=125., clustering_alg='k_means', normalize=False, n=4, dist=cdist, norm = 'L1'):
     """
     Args:
         data: np.array, (n_points x n_channels)
@@ -240,7 +251,7 @@ def calc_microstates(data, window, no_peak_points='ffill',bounds = [8,13], sfreq
     labels = get_labels(X, history, maximas[0], max_labels, dist, no_peak_points)
     return clusters, history, gfp, labels, max_labels
 
-def cluster_patients(dir,n=4)
+def cluster_patients(dir,n=4,sfreq=125., mode_transitions = 'state_to_state')
     
     """
 
@@ -250,6 +261,10 @@ def cluster_patients(dir,n=4)
     label_list = []
     gfp_list = []
     max_labels_list = []
+    names = []
+    centre = []
+    max_list = []
+    X_list = []
     iter = 0
     for i in os.listdir(dir):
         if i != 'path_file.csv':
@@ -259,11 +274,12 @@ def cluster_patients(dir,n=4)
             filtered = get_filtered_data(df)
 
             X = filtered[1:].T
-    
+            X_list.append(X)
             #norms=np.linalg.norm(X, axis=1)
             #X = np.multiply(X,1/norms.reshape(norms.shape[0], 1))
-            gfp, maximas, maximal_states = compute_gfp_maximas(X, 7)
+            gfp, maximas, maximal_states = compute_gfp_maximas(X, 7, 'L1')
             #[maximas[0],:]
+            max_list.append(maximas)
             #X = cut_low_gfp(X, gfp, ratio=0.05)
             history, max_labels, _, init = get_clusters(X,n,crit = 1e-7,dist_mode = 'ort_dist', alg_mode = 'm_k-means')#, starting_mode = 'pca')
     
@@ -275,16 +291,32 @@ def cluster_patients(dir,n=4)
                 #print(np.max(X_old - history))
                 stack = np.vstack((stack,history))
             #X_old = history
-            re_labels, l, d = assign_labels_auto(history, prev, labels, n)
+                re_labels, l, d = assign_labels_auto(history, prev, labels, n)
+            
             prev = history.copy()
-    
+            centre.append(history)
+            label_list.append(labels)
+            names.append(i)
+            gfp_list.append(gfp)
+            max_labels_list.append(max_labels)
     #if not (0 in l and 1 in l and 2 in l and 3 in l):
      # print('bum')
       #break
-
+    true_labels = []
+    true_max_labels = []
+    true_centres = []
     total_centroids, _, _, _  = get_clusters(stack,crit = 1e-7,dist_mode = 'cos')
-
-    return total_centroids
+    for i in range(len(os.listdir(dir))-1):
+        re_l , s, _ = assign_labels_auto(centre[i], total_centroids, label_list[i], n=4)
+        true_labels.append(re_l)
+        re_l , _, _ = assign_labels_auto(centre[i], total_centroids, max_labels_list[i], n=4)
+        true_labels.append(re_l)
+        true_centres.append(centre[i][s])
+    feature_list = []
+    for i in range(len(X_list)):
+        feature_list.append(get_microstate_features(true_labels[i], true_max_labels[i], X_list[i], gfp_list[i], true_centres[i],  sfreq=125., n=4, mode_transitions))
+        
+    return total_centroids, true_labels, true_max_labels, true_centres, X_list, names, gfp_list
 
 def visualise_clusters_3d(X,labels,embedding='tSNE',n=4):
     """
@@ -515,5 +547,13 @@ def get_microstate_features(lables, max_labels, X, gfp, history,  sfreq=125., n=
     
     feature_dict = {'Transition matrix' : T,  time_statistics = [t_mean, t_median, t_max, t_variance], 'MI' : MI, 'GEV' : GEV, 'First component' : X_1}
     return feature_dict
+
+def compute_all_features(true_labels, true_max_labels, true_centres, X_list, names, gfp_list, sfreq=125., n=4, mode = 'state_to_state'):
+    all_features = []
+    all_answers = []
+    for i, j in enumerate(names):
+        all_features.append(get_microstate_features(true_labels[i], true_max_labels[i], X_list[i], gfp_list[i], true_centres[i],  sfreq, n, mode))
+        all_answers.append()
+
 
 
