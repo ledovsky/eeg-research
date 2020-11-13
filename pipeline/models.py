@@ -238,6 +238,10 @@ class PredictionsResult:
         self.y_true = y_true.copy()
         self.y_pred = y_pred.copy()
 
+    @classmethod
+    def from_df(PredictionsResult, df):
+        return PredictionsResult(df['target'], df['pred'])
+
     @property
     def roc_auc(self):
         return roc_auc_score(self.y_true, self.y_pred)
