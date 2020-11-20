@@ -486,8 +486,8 @@ def repeated_train_test(X, y, model, test_size=0.15, n_repeats=100, random_state
     return res
 
 
-def train_test_validate(df, features, model, test_size=15):
-    train_ind, test_ind = train_test_split(df.index, test_size=test_size)
-    new_features, _, hist = select_features(df.loc[train_ind], features, model)
-    X_test, y_test = get_x_y(df.loc[test_ind], features)
-    return new_features, repeated_kfold(X_test, y_test, model, n_repeats=20), hist
+# def train_test_validate(df, features, model, test_size=15):
+#     train_ind, test_ind = train_test_split(df.index, test_size=test_size)
+#     new_features, _, hist = select_features(df.loc[train_ind], features, model)
+#     X_test, y_test = get_x_y(df.loc[test_ind], features)
+#     return new_features, repeated_kfold(X_test, y_test, model, n_repeats=20), hist

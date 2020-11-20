@@ -41,7 +41,7 @@ def nested_cross_val(df, features, model, n_splits=10, n_repeats=10, metric='roc
     return PredictionsResult(df['target'], y_preds)
 
 
-def get_repeated_scores(method, *method_args, n_repeats=10, verbose=False, p_bar=1, random_state=42, **method_kwargs):
+def get_repeated_scores(method, *method_args, method_kwargs={}, n_repeats=10, verbose=False, p_bar=1, random_state=42):
     np.random.seed(random_state)
     scores = []
     random_states = np.random.randint(100000, size=n_repeats)
