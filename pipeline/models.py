@@ -5,8 +5,6 @@ import operator
 import pandas as pd
 import numpy as np
 
-from tqdm.auto import tqdm
-
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -17,6 +15,8 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn.preprocessing import StandardScaler
 
 import xgboost as xgb
+
+from .utils import get_tqdm_iter
 
 
 def create_or_append(df, path):
@@ -340,29 +340,13 @@ def repeated_kfold(X, y, model, n_splits=10, n_repeats=100, random_state=42):
     return res
 
 
-def get_x_y(df, features):
-    X = df[features].fillna(0).values
-    y = df['target'].values
-    return X, y
-
-
-def get_x(df, features):
-    X = df[features].fillna(0).values
-    return X
-
-
-def get_tqdm_iter(iterable, p_bar, **tqdm_kwargs):
-    if p_bar > 0:
-        return tqdm(iterable, **tqdm_kwargs)
-    return iterable
-
-
 def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeats=20,
                     threshold=0.005, take_first=None, order_func=None, verbose=False,
                     p_bar=1):
     X = df[features].fillna(0).values
     y = df['target'].values
-
+    if df_val is not None:
+        y_val = df_val['target'].values
     def get_metric(data):
         if metric == 'roc-auc':
             return data.roc_aucs
@@ -415,7 +399,7 @@ def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeat
             }
             if df_val is not None:
                 X = df_val[cur_features].fillna(0).values
-                val_res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
+                val_res = repeated_kfold(X, y_val, model, n_splits=10, n_repeats=n_repeats)
                 d['score_val'] = get_metric(val_res).mean()
                 d['score_val_std'] = get_metric(val_res).std()
             hist.append(d)
@@ -455,39 +439,3 @@ def train_test(X_1, y_1, X_2, y_2, model):
     model.fit(X_1, y_1)
     y_pred = model.predict_proba(X_2)[:, 1]
     return PredictionsResult(y_2, y_pred)
-
-
-def repeated_train_test(X, y, model, test_size=0.15, n_repeats=100, random_state=42):
-    """
-
-    Args:
-        X: 2d numpy array of features
-        y: 1d numpy array of targets
-        model: classifier
-        test_size (float, optional): Percentage of data that is used for validation. Defaults to 0.15.
-        n_repeats (int, optional): Defaults to 100.
-        random_state (int, optional): Defaults to 42.
-
-    Returns:
-        res:
-    """
-    np.random.seed(random_state)
-    random_states = np.random.randint(100000, size=2*n_repeats)
-    _, y_test = train_test_split(y, test_size=test_size)
-    y_preds = np.empty(shape=(y_test.shape[0], n_repeats))
-
-    for i in range(n_repeats):
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_states[2*i])
-        train_test_res = train_test(X_train, y_train, X_test, y_test, model, random_state=random_states[2*i+1])
-
-        y_preds[:, i] = train_test_res.y_pred
-
-    res = RepeatedPredictionsResult(y_test, y_preds)
-    return res
-
-
-# def train_test_validate(df, features, model, test_size=15):
-#     train_ind, test_ind = train_test_split(df.index, test_size=test_size)
-#     new_features, _, hist = select_features(df.loc[train_ind], features, model)
-#     X_test, y_test = get_x_y(df.loc[test_ind], features)
-#     return new_features, repeated_kfold(X_test, y_test, model, n_repeats=20), hist
