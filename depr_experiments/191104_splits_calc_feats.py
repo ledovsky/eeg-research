@@ -8,14 +8,11 @@ sys.path.append('../pipeline')
 from features import get_feature_build_func
 
 
-# data_path_1 = '../../../preproc_data/depr/epoch_1'
-# data_path_2 = '../../../preproc_data/depr/epoch_3'
-my_data_path_1 = '../data/depr_anon/epoch_1'
-my_data_path_2 = '../data/depr_anon/epoch_3'
-
+data_path_1 = '../../../preproc_data/depr/epoch_1'
+data_path_2 = '../../../preproc_data/depr/epoch_3'
 data_paths = [
-    my_data_path_1,
-    my_data_path_2,
+    data_path_1,
+    data_path_2
 ]
 out_path = '../../own_data/191104_depr_splits_features'
 
