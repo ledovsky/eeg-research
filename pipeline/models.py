@@ -1,22 +1,22 @@
-from os.path import exists, join
-from os import mkdir, remove, listdir
+from os.path import exists
 
 import operator
 
 import pandas as pd
 import numpy as np
 
-from tqdm import trange, tqdm, tqdm_notebook
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold
+from sklearn.model_selection import LeaveOneOut, KFold, train_test_split
 from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn.preprocessing import StandardScaler
 
 import xgboost as xgb
+
+from .utils import get_tqdm_iter
 
 
 def create_or_append(df, path):
@@ -193,7 +193,6 @@ class RFModel(RegularModel):
 
 
 from sklearn.base import BaseEstimator
-from sklearn.pipeline import Pipeline
 
 
 class LRScaled(BaseEstimator):
@@ -238,6 +237,10 @@ class PredictionsResult:
     def __init__(self, y_true, y_pred):
         self.y_true = y_true.copy()
         self.y_pred = y_pred.copy()
+
+    @classmethod
+    def from_df(PredictionsResult, df):
+        return PredictionsResult(df['target'], df['pred'])
 
     @property
     def roc_auc(self):
@@ -337,23 +340,18 @@ def repeated_kfold(X, y, model, n_splits=10, n_repeats=100, random_state=42):
     return res
 
 
-def get_x_y(df, features):
-    X = df[features].fillna(0).values
-    y = df['target'].values
-    return X, y
-
-
-def get_x(df, features):
-    X = df[features].fillna(0).values
-    return X
-
-
-def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.005, take_first=None, notebook=True,
-                    order_func=None):
+def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeats=20,
+                    threshold=0.005, take_first=None, order_func=None, verbose=False,
+                    p_bar=1):
     X = df[features].fillna(0).values
     y = df['target'].values
     if df_val is not None:
         y_val = df_val['target'].values
+    def get_metric(data):
+        if metric == 'roc-auc':
+            return data.roc_aucs
+        if metric == 'acc':
+            return data.accs
 
     if order_func is None:
         X_sc = StandardScaler().fit_transform(X)
@@ -373,57 +371,71 @@ def select_features(df, features, model, df_val=None, n_repeats=20, threshold=0.
     best_res = None
     hist = []
 
-    print('Feature selection. Step 1')
-
-    if notebook:
-        tqdm = tqdm_notebook
 
     def update(new_features, cur_features, best_res, hist, action):
         def condition(res, best_res):
             if best_res is None:
-                if res.roc_aucs.mean() > 0.5 + threshold:
+                if get_metric(res).mean() > 0.5 + threshold:
                     return True
                 else:
                     return False
-            elif res.roc_aucs.mean() - best_res.roc_aucs.mean() > threshold:
+            elif get_metric(res).mean() - get_metric(best_res).mean() > threshold:
                 return True
             else:
                 return False
         X = df[cur_features].fillna(0).values
         res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
-
+        if verbose:
+            print(f'{res.roc_aucs.mean():4f}\t{res.accs.mean():4f}')
+            pass
         if condition(res, best_res):
             new_features = cur_features
             best_res = res
             d = {
-                'feature': f,
+                'feature': feature,
                 'action': action,
-                'score': res.roc_aucs.mean(),
-                'score_std': res.roc_aucs.std()
+                'score': get_metric(res).mean(),
+                'score_std': get_metric(res).std()
             }
             if df_val is not None:
                 X = df_val[cur_features].fillna(0).values
                 val_res = repeated_kfold(X, y_val, model, n_splits=10, n_repeats=n_repeats)
-                d['score_val'] = val_res.roc_aucs.mean()
-                d['score_val_std'] = val_res.roc_aucs.std()
+                d['score_val'] = get_metric(val_res).mean()
+                d['score_val_std'] = get_metric(val_res).std()
             hist.append(d)
         return new_features, best_res, hist
 
-    for f in tqdm(features):
-        cur_features = new_features + [f]
+
+    if verbose:
+        print('Feature selection. Step 1')
+        print('feature_name    \troc-auc \taccuracy')
+
+    for feature in get_tqdm_iter(features, p_bar):
+        if verbose:
+            print(f'{feature:16}', end='\t')
+        cur_features = new_features + [feature]
         new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='added')
 
-    print('Feature selection. Step 2')
+    if verbose:
+        print()
+        print('Feature selection. Step 2')
+        print('feature_name    \troc-auc \taccuracy')
+
     features = new_features.copy()
 
-    for f in features:
-        cur_features = [_f for _f in new_features if _f != f]
+    for feature in get_tqdm_iter(features, p_bar):
+        if verbose:
+            print(f'{feature:16}', end='\t')
+        cur_features = [_f for _f in new_features if _f != feature]
         new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='removed')
+
+    if verbose:
+        print()
 
     return new_features, best_res, pd.DataFrame(hist)
 
 
-def train_test(X_1, y_1, X_2, y_2, model, random_state=42):
+def train_test(X_1, y_1, X_2, y_2, model):
     model.fit(X_1, y_1)
     y_pred = model.predict_proba(X_2)[:, 1]
     return PredictionsResult(y_2, y_pred)
