@@ -1,6 +1,6 @@
 """
 Example usage:
-python aut_preproc/main.py \
+PYTHONPATH=./ python aut_preproc/main.py \
     --data-path ../../raw_data/autists \
     --out-path ../../preproc_data/autists
 """
@@ -10,10 +10,11 @@ import os
 from os.path import join
 
 import pandas as pd
+from scipy import signal
 
 from mne.io import read_raw_edf
 
-from paths import get_path_df
+from aut_preproc.paths import get_path_df
 
 
 def main():
@@ -43,8 +44,13 @@ def main():
 
         df = change_reference(df, 'cz')
         # reduce sfreq to 125Hz
-        df = df.iloc[::2, :]
-        df.to_csv(path_to_save)
+        # df = df.iloc[::2, :]
+
+        new_df = df[[]].copy()
+        new_df = new_df[::2]
+        for col in df.columns:
+            new_df[col] = signal.decimate(df[col], 2)
+        new_df.to_csv(path_to_save)
 
     del path_df['full_path']
     path_df = path_df.loc[~path_df.index.isin(to_exclude)]
