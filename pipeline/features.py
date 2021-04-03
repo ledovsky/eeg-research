@@ -45,7 +45,11 @@ band_bounds = {
     'theta' : [4, 8],
     'alpha': [8, 13],
     'beta': [13, 30],
-    'gamma': [30, 45]
+    'gamma': [30, 45],
+    '4_6': [2, 4],
+    '6_8': [2, 4],
+    '8_10': [2, 4],
+    '10_12': [2, 4],
 }
 
 
@@ -102,31 +106,25 @@ def get_filter(sfreq=125., band='alpha'):
     return filt
 
 
-def get_bands_feats(df, sfreq=125.):
+def get_bands_feats(df, bands=('alpha', 'beta'), sfreq=125., nperseg=1024):
 
-    electrodes = df.columns
+    channels = df.columns
 
     feats = {}
 
-    for el in electrodes:
-        freqs, psds = signal.welch(df[el], sfreq, nperseg=1024)
+    for ch in channels:
+        freqs, psds = signal.welch(df[ch], sfreq, nperseg=nperseg)
         psd_df = pd.DataFrame(data={'freqs': freqs, 'psds': psds})
-        feats[get_col_name('bands', 'alpha', el)] = psd_df.loc[
-            (psd_df['freqs'] >= band_bounds['alpha'][0]) &
-            (psd_df['freqs'] <= band_bounds['alpha'][1])]['psds'].sum()
-
-        feats[get_col_name('bands', 'beta', el)] = psd_df.loc[
-            (psd_df['freqs'] >= band_bounds['beta'][0]) &
-            (psd_df['freqs'] <= band_bounds['beta'][1])]['psds'].sum()
-
-        feats[get_col_name('bands', 'theta', el)] = psd_df.loc[
-            (psd_df['freqs'] >= band_bounds['theta'][0]) &
-            (psd_df['freqs'] <= band_bounds['theta'][1])]['psds'].sum()
-
-        feats[get_col_name('bands', 'gamma', el)] = psd_df.loc[
-            (psd_df['freqs'] >= band_bounds['gamma'][0]) &
-            (psd_df['freqs'] <= band_bounds['gamma'][1])]['psds'].sum()
-
+        total = psd_df['psds'].sum()
+        for band in bands:
+            feats[get_col_name('bands', band, ch)] = (
+                psd_df.loc[
+                    (psd_df['freqs'] >= band_bounds[band][0]) &
+                    (psd_df['freqs'] <= band_bounds[band][1]),
+                    'psds']
+                .sum()
+                / total
+            )
     return feats
 
 
@@ -192,6 +190,28 @@ def get_envelope_feats(df, sfreq=125., band='alpha'):
         d[get_col_name('env', band, el_1, el_2)] = pearsonr(series_1, series_2)[0]
 
     return d
+
+
+def get_envelope_std(df, sfreq=125., band='alpha'):
+    channels = df.columns
+
+    if band is not None:
+        filt = get_filter(sfreq, band)
+    else:
+        filt = None
+
+    d = {}
+
+    for ch in channels:
+        sig = df[ch]
+        if filt is not None:
+            sig = np.convolve(filt, df[ch], 'valid')
+        sig = hilbert(sig)
+        sig = np.abs(sig)
+        d[ch + '_env_var'] = sig.std() / sig.mean()
+
+    return d
+
 
 
 def get_psi_feats(df, sfreq=125., band='alpha'):
