@@ -18,20 +18,22 @@ from .features import calc_features_dict
 """
 
 
-def get_train_df(features_df, path_df):
+def get_train_df(features_df, path_df, columns_to_add=['target']):
     assert ('target' in path_df.columns) == True, 'No target in path_df'
-    res_df = features_df.merge(path_df[['fn', 'target']], on='fn')
+    res_df = features_df.merge(path_df[['fn', *columns_to_add]], on='fn')
     return res_df
 
 
 class FeatureBuilder:
-    def __init__(self, method_names):
+    def __init__(self, methods):
         self.rows = []
-        self.method_names = method_names
+        self.methods = methods
 
-    def add(self, df, fn):
-        d = calc_features_dict(df, self.method_names)
-        d['fn'] = fn
+    def process_sample(self, df, fn):
+        d = {}
+        for method in self.methods:
+            d.update(method(df))
+            d['fn'] = fn
         self.rows.append(d)
 
     def get_df(self):
