@@ -21,11 +21,11 @@ own_data/autists_splits
 - part_1
 - part_2
 
+
 Example how to run:
-PYTHONPATH=./ python aut_experiments/200708_feats_on_clusters.py \
+PYTHONPATH=./ python aut_experiments_archive/200426_splits_calc_feats.py \
     --data-path ../../preproc_data/autists \
-    --out-path ../own_data/200823_aut_clust_v3 \
-    --cluster-type 2 \
+    --out-path ../own_data/200426_autists_features_v2_thr30 \
     --debug
 
 """
@@ -36,70 +36,20 @@ from os import mkdir
 
 import pandas as pd
 
-from pipeline.data_preparation import FeatureBuilder
+from pipeline.data_preparation import FeatureBuilder, get_train_df
 
-"""
-(F3, F7, T3, C3);     (F4, F8, T4, C4);   (T5, P3, O1);  (T6, P4, O2);  (Fz, Cz, Pz)
-
-Второй вариант:
-
-(F3, Fz, F4) (F7, T3), (F8, T4), (C3, Cz, C4) (P3, Pz, P4), (T5, O1), (T6, O2)
-
-Третий вариант:
-
-(F3, F7, T3), (F4, F8, T4), (C3, Cz, C4, Pz), (T5, O1, Р3), (T6, O2, P4)
-
-"""
-
-clusters_0 = [
-    ('f3', 'f7', 't3', 'c3'),
-    ('f4', 'f8', 't4', 'c4'),
-    ('t5', 'p3', 'o1'),
-    ('t6', 'p4', 'o2'),
-    ('fz', 'cz', 'pz')
-]
-
-clusters_1 = [
-    ('f3', 'fz', 'f4'),
-    ('f7', 't3'),
-    ('c3', 'cz', 'c4'),
-    ('p3', 'pz', 'p4'),
-    ('t5', 'o1'),
-    ('t6', 'o2')
-]
-
-clusters_2 = [
-    ('f3', 'f7', 't3'),
-    ('f4', 'f8', 't4'),
-    ('c3', 'cz', 'c4', 'pz'),
-    ('t5', 'o1', 'p3'),
-    ('t6', 'o2', 'p4')
-]
-
-def sum_by_clusters(df, clusters):
-    new_df = df[[]].copy()
-    for i, clust in enumerate(clusters):
-        new_ch_name = 'clust' + str(i)
-        new_df[new_ch_name] = df[list(clust)].sum(axis=1)
-    return new_df
 
 feature_files = {
-    'coh_alpha.xlsx': ['coh-alpha'],
-    'coh_beta.xlsx': ['coh-beta'],
-    'coh_theta.xlsx': ['coh-theta'],
-    'env_alpha.xlsx': ['env-alpha'],
-    'env_beta.xlsx': ['env-beta'],
-    'env_theta.xlsx': ['env-theta'],
-    # 'bands.csv': ['bands'],
-    # 'set_1.csv': ['coh-alpha', 'coh-beta', 'env-alpha', 'env-beta'],
-    # 'set_2.csv': ['coh-alpha', 'coh-beta', 'coh-theta', 'env-alpha', 'env-beta', 'env-theta'],
+    'coh_alpha.csv': ['coh-alpha'],
+    'coh_beta.csv': ['coh-beta'],
+    'coh_theta.csv': ['coh-theta'],
+    'env_alpha.csv': ['env-alpha'],
+    'env_beta.csv': ['env-beta'],
+    'env_theta.csv': ['env-theta'],
+    'bands.csv': ['bands'],
+    'set_1.csv': ['bands', 'coh-alpha', 'coh-beta', 'env-alpha', 'env-beta'],
+    'set_2.csv': ['bands', 'coh-alpha', 'coh-beta', 'coh-theta', 'env-alpha', 'env-beta', 'env-theta'],
 }
-
-
-def get_train_df(features_df, path_df):
-    assert ('target' in path_df.columns) == True, 'No target in path_df'
-    res_df = features_df.merge(path_df[['fn', 'target', 'age']], on='fn')
-    return res_df
 
 
 def main():
@@ -108,17 +58,7 @@ def main():
     thr = 30
     # thr = 60
 
-    data_path, out_path, cluster_type, debug = parse_args()
-
-    if cluster_type == 0:
-        clusters = clusters_0
-    elif cluster_type == 1:
-        clusters = clusters_1
-    elif cluster_type == 2:
-        clusters = clusters_2
-    else:
-        raise ValueError('cluster type should be 0, 1 or 2')
-
+    data_path, out_path, debug = parse_args()
     path_df = pd.read_csv(join(data_path, 'path_file.csv'))
     path_df = path_df[path_df['seconds'] >= thr]
 
@@ -126,6 +66,7 @@ def main():
         mkdir(out_path)
 
     for split_type in ['full', 'part_1', 'part_2']:
+        # for split_type in ['part_1', 'part_2']:
         if not exists(join(out_path, split_type)):
             mkdir(join(out_path, split_type))
 
@@ -136,10 +77,10 @@ def main():
         for i, row in path_df.iterrows():
             df = pd.read_csv(join(data_path, row['fn']), index_col='time')
             df = df.iloc[:thr*125]
-            df = sum_by_clusters(df, clusters)
+
             df = get_split(df, split_type)
             print(row['fn'])
-            # del df['cz']
+            del df['cz']
             for out_fn, builder in feature_builder_dict.items():
                 builder.add(df, row['fn'])
             cnt += 1
@@ -149,7 +90,7 @@ def main():
         for out_fn, builder in feature_builder_dict.items():
             features_df = builder.get_df()
             train_df = get_train_df(features_df, path_df)
-            train_df.to_excel(join(out_path, split_type, out_fn), index=False)
+            train_df.to_csv(join(out_path, split_type, out_fn), index=False)
         if debug:
             break
 
@@ -163,14 +104,11 @@ def parse_args():
     parser.add_argument('--out-path', action='store', type=str, required=True,
                         help='')
 
-    parser.add_argument('--cluster-type', action='store', type=int, required=True,
-                        help='')
-
     parser.add_argument('--debug', action='store_true')
 
     args = parser.parse_args()
 
-    return args.data_path, args.out_path, args.cluster_type, args.debug
+    return args.data_path, args.out_path, args.debug
 
 
 def get_split(df, split_type):

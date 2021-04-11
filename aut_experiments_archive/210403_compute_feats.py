@@ -23,7 +23,7 @@ own_data/autists_splits
 
 
 Example how to run:
-PYTHONPATH=./ python aut_experiments/210403_compute_feats.py \
+PYTHONPATH=./ python aut_experiments_archive/210403_compute_feats.py \
     --data-path ../../preproc_data/autists \
     --out-path ../own_data/210403_aut_bands_and_env_var \
     --debug

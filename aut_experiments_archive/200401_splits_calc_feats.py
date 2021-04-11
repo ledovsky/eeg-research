@@ -14,7 +14,7 @@ own_data/autists_splits
 
 
 Example how to run:
-PYTHONPATH=./ python aut_experiments/200401_splits_calc_feats.py \
+PYTHONPATH=./ python aut_experiments_archive/200401_splits_calc_feats.py \
     --data-path ../../preproc_data/autists \
     --out-path ../own_data/200401_autists_features \
     --debug

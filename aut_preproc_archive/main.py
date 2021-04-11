@@ -1,6 +1,6 @@
 """
 Example usage:
-PYTHONPATH=./ python aut_preproc/main.py \
+PYTHONPATH=./ python aut_preproc_archive/main.py \
     --data-path ../../raw_data/autists \
     --out-path ../../preproc_data/autists
 """
@@ -14,7 +14,7 @@ from scipy import signal
 
 from mne.io import read_raw_edf
 
-from aut_preproc.paths import get_path_df
+from aut_preproc_archive.paths import get_path_df
 
 
 def main():
