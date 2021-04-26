@@ -3,6 +3,8 @@ from os.path import join
 
 import pandas as pd
 
+import mne
+
 from .features import calc_features_dict
 
 
@@ -91,4 +93,11 @@ def merge_dfs(dfs=None, in_paths=None, out_path=None):
         return res_df
 
 
+def add_montage(raw, ch_map=None):
+    ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
+    if ch_map:
+        ten_twenty_montage.ch_names = [ch_map[ch] if ch in ch_map else ch
+                                       for ch in ten_twenty_montage.ch_names]
+    raw.set_montage(ten_twenty_montage)
+    return raw
 
