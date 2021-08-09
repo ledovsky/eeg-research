@@ -1,0 +1,48 @@
+KNN
+
+Citrus/Coffee	 env_alpha_fz_t4 env_alpha_t3_p4 coh_beta_f4_p3 env_alpha_f3_t4 env_beta_fp1_f3 coh_alpha_c4_t5 env_alpha_f7_t4 coh_alpha_f7_f8 env_alpha_t5_p3 env_beta_fp1_fz env_alpha_t3_c4 coh_beta_fp2_f8 env_beta_f7_t5 env_alpha_c4_p4 env_beta_f3_f8 coh_alpha_f3_f8 bands_beta_c3
+Citrus/Vanilla	 env_beta_fz_cz env_beta_f3_t5 coh_alpha_fp1_t5 coh_beta_c4_pz env_alpha_fz_t4 coh_beta_fp1_p4 env_beta_t3_c4 coh_alpha_fp2_t5 coh_alpha_fp2_f8 coh_alpha_fz_f8 coh_beta_c4_p3 coh_beta_t5_t6 env_beta_p3_pz coh_beta_fp1_t6 env_alpha_p3_p4 coh_beta_fp1_t5 coh_alpha_fp2_fz coh_beta_fz_t5 coh_alpha_c4_t5 coh_beta_f3_t6 env_beta_f4_f8 coh_beta_f4_f8
+Citrus/Water	 env_alpha_fp1_t3 coh_beta_c4_t6 coh_beta_fz_t3 coh_alpha_p4_o1 coh_alpha_t6_o1 env_alpha_c4_pz env_beta_fz_t3 env_beta_f3_o1 env_alpha_c4_p3 coh_beta_fp2_t3 env_beta_fp2_fz coh_alpha_fp2_p4
+Coffee/Vanilla	 coh_beta_fp1_f4 env_beta_c3_t4 coh_beta_fp1_t5 env_alpha_f8_t5 coh_beta_p4_t6 env_alpha_fz_c4 coh_beta_fp1_f3 coh_alpha_c3_t4 env_alpha_fz_o2 coh_beta_f8_o1 env_beta_c3_p4 coh_beta_fz_f4 coh_beta_fp2_t3 env_beta_fz_f4 coh_beta_fp2_o1 coh_alpha_fz_cz coh_beta_fz_f8 coh_alpha_fp1_f8 coh_alpha_c3_p3 coh_beta_t5_o2
+Coffee/Water	 coh_alpha_fp2_t4 bands_alpha_c3 coh_beta_f8_p4 env_alpha_t3_c4 coh_alpha_p3_o2 env_alpha_t3_o2 env_beta_p3_o1 coh_beta_f7_t4 coh_beta_fp1_o2 env_beta_fz_t6 coh_alpha_pz_p4 coh_alpha_f4_pz coh_beta_fp2_f4
+Vanilla/Water	 coh_beta_t4_o1 coh_beta_f3_t4 coh_beta_t4_t5 coh_alpha_t5_t6 coh_beta_p4_o1 coh_beta_f3_fz
+
+Citrus/Coffee	0,438	0,923	0,024	0,813	0,092
+Citrus/Vanilla	0,536	0,923	0,027	0,852	0,088
+Citrus/Water	0,527	0,874	0,037	0,761	0,105
+Coffee/Vanilla	0,339	0,854	0,040	0,753	0,112
+Coffee/Water	0,420	0,884	0,033	0,750	0,100
+Vanilla/Water	0,607	0,900	0,030	0,818	0,108
+
+
+LR
+
+Citrus/Coffee	 env_beta_fz_t3 bands_beta_fp1 env_alpha_f4_o1 env_alpha_c4_o2 env_alpha_f3_o1 coh_alpha_f3_f8 env_beta_c4_pz coh_beta_f4_p3 bands_alpha_f3 env_alpha_cz_o1 bands_alpha_t3 coh_alpha_fp2_t3 env_alpha_f4_t3 coh_beta_fp1_f4
+Citrus/Vanilla	 env_beta_f3_o1 coh_alpha_f4_f8 coh_beta_c4_pz env_alpha_fz_t4 coh_beta_fp1_p4 coh_alpha_fp2_f8 env_alpha_c4_t4 env_alpha_fz_t3 env_beta_fp1_f4 env_alpha_fz_t5 env_beta_fz_f4
+Citrus/Water	 env_alpha_fp1_t3 coh_beta_c3_t6 env_beta_fp1_t5 coh_alpha_o1_o2 coh_alpha_t6_o1 env_alpha_c4_o2 env_alpha_f3_f8 env_alpha_c4_o1 env_beta_fz_t3 env_alpha_t3_o2 env_alpha_c3_o1 coh_alpha_c4_t5 env_alpha_c4_p3 env_beta_f4_t3 coh_beta_t5_p3
+Coffee/Vanilla	 coh_beta_fp1_f4 env_beta_fz_p4 env_beta_c3_t4 env_alpha_cz_c4 env_alpha_f8_t5 env_alpha_fz_o1 env_alpha_fz_c4 coh_beta_f3_f8 env_beta_f3_p3 coh_alpha_c3_t4 coh_beta_fp2_f7
+Coffee/Water	 coh_alpha_fp2_t4 env_alpha_fp1_t3 env_alpha_fz_f4 coh_beta_f8_p4 env_alpha_t3_c4 coh_beta_f8_t5 coh_beta_f7_t4 coh_beta_fp1_t6 bands_alpha_o1 env_alpha_f3_t4 env_alpha_t3_t6 env_alpha_c4_t5 coh_beta_p3_t6 coh_alpha_t5_o2 coh_beta_fp2_cz coh_beta_t3_c3
+Vanilla/Water	 coh_beta_t4_o1 coh_beta_f3_t4 env_alpha_fp1_t3 coh_beta_c4_t6 coh_beta_pz_p4 coh_alpha_t5_t6 coh_alpha_t6_o1 coh_beta_t4_p4 env_beta_pz_p4 env_beta_c3_cz env_alpha_fp2_t4 env_alpha_c3_t5 env_beta_p4_o2 env_beta_f3_t5
+
+Citrus/Coffee	0,232	0,811	0,046	0,667	0,112
+Citrus/Vanilla	0,482	0,862	0,039	0,686	0,117
+Citrus/Water	0,393	0,891	0,028	0,776	0,109
+Coffee/Vanilla	0,464	0,862	0,038	0,729	0,111
+Coffee/Water	0,375	0,894	0,032	0,741	0,114
+Vanilla/Water	0,732	0,899	0,032	0,797	0,095
+
+
+
+Citrus/Coffee	0,628
+Citrus/Vanilla	0,597
+Citrus/Water	0,600
+Coffee/Vanilla	0,433
+Coffee/Water	0,382
+Vanilla/Water	0,539
+
+Citrus/Coffee	0,669
+Citrus/Vanilla	0,510
+Citrus/Water	0,472
+Coffee/Vanilla	0,444
+Coffee/Water	0,462
+Vanilla/Water	0,516
