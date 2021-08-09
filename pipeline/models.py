@@ -206,6 +206,11 @@ class LRScaled(BaseEstimator):
         self.lr.fit(X, y)
         return self
 
+    def set_params(self, **params):
+        if 'random_state' in params:
+            del params['random_state']
+        return super().set_params(**params)
+
     def predict(self, X):
         X = self.transformer.transform(X)
         return self.lr.predict(X)
@@ -296,7 +301,7 @@ def kfold(X, y, model, n_splits=10, random_state=42, to_drop=None):
         res: PredictionsResult
     """
 
-    model.set_params(random_state=random_state)
+    # model.set_params(random_state=random_state)
     y_pred = np.zeros(shape=y.shape)
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
 
@@ -422,12 +427,12 @@ def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeat
         print('feature_name    \troc-auc \taccuracy')
 
     features = new_features.copy()
-
-    for feature in get_tqdm_iter(features, p_bar):
-        if verbose:
-            print(f'{feature:16}', end='\t')
-        cur_features = [_f for _f in new_features if _f != feature]
-        new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='removed')
+    if len(features) > 1:
+        for feature in get_tqdm_iter(features, p_bar):
+            if verbose:
+                print(f'{feature:16}', end='\t')
+            cur_features = [_f for _f in new_features if _f != feature]
+            new_features, best_res, hist = update(new_features, cur_features, best_res, hist, action='removed')
 
     if verbose:
         print()

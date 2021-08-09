@@ -17,8 +17,12 @@ class FeatureSelectionModel(object):
         self.p_bar = p_bar
         self.random_state = random_state
 
+    def get_features(self):
+        raise NotImplementedError()
+
     def get_prediction_result(self) -> PredictionsResult:
-        raise NotImplementedError
+        _, result = self.get_features()
+        return result
 
 
 
@@ -38,14 +42,11 @@ class TrainTestValidator(FeatureSelectionModel):
                 'train indices:', np.sort(test_idx.values), sep='\n')
             print()
 
-        new_features, _, _ = select_features(self.df.loc[train_idx], self.features, self.model, self.metric, n_repeats=1, verbose=self.verbose, p_bar=self.p_bar)
+        new_features, _, _ = select_features(self.df.loc[train_idx], self.features, self.model, self.metric, n_repeats=5, verbose=self.verbose, p_bar=self.p_bar)
         X_1, y_1 = get_x_y(self.df.loc[train_idx], new_features)
         X_2, y_2 = get_x_y(self.df.loc[test_idx], new_features)
         return new_features, train_test(X_1, y_1, X_2, y_2, self.model)
 
-    def get_prediction_result(self) -> PredictionsResult:
-        _, result = self.get_features()
-        return result
 
 
 
@@ -56,9 +57,10 @@ class NestedCrossValidator(FeatureSelectionModel):
         self.n_repeats = n_repeats
         self.metric = metric
 
-    def get_prediction_result(self) -> PredictionsResult:
+    def get_features(self):
         np.random.seed(self.random_state)
         y_preds = np.empty((self.df.shape[0]))
+        features = []
         cv = KFold(n_splits=self.n_splits, shuffle=True)
         for train_idx, test_idx in get_tqdm_iter(cv.split(self.df), self.p_bar, total=self.n_splits):
 
@@ -72,8 +74,9 @@ class NestedCrossValidator(FeatureSelectionModel):
             X_train, y_train = get_x_y(self.df.loc[train_idx], new_features)
             X_test = get_x(self.df.loc[test_idx], new_features)
             self.model.fit(X_train, y_train)
+            features.append(new_features)
             y_preds[test_idx] = self.model.predict_proba(X_test)[:, 1]
-        return PredictionsResult(self.df['target'], y_preds)
+        return features, PredictionsResult(self.df['target'], y_preds)
 
 
 class MultiSegementTraiTest(TrainTestValidator):
