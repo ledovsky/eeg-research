@@ -256,6 +256,32 @@ class PredictionsResult:
         return accuracy_score(self.y_true, self.y_pred > 0.5)
 
 
+class CVPredictionsResult:
+    def __init__(self, y_true, y_pred):
+        self.y_true = y_true.copy()
+        self.y_pred = y_pred.copy()
+        self._roc_aucs = None
+        self._accs = None
+
+    @property
+    def roc_aucs(self):
+        if self._roc_aucs is None:
+            self._roc_aucs = []
+            for y_true, y_pred in zip(self.y_true, self.y_pred):
+                self._roc_aucs.append(roc_auc_score(y_true, y_pred))
+            self._roc_aucs = np.array(self._roc_aucs)
+        return self._roc_aucs
+
+    @property
+    def accs(self):
+        if self._accs is None:
+            self._accs = []
+            for y_true, y_pred in zip(self.y_true, self.y_pred):
+                self._accs.append(accuracy_score(y_true, y_pred > .5))
+            self._accs = np.array(self._accs)
+        return self._accs
+
+
 class RepeatedPredictionsResult:
     def __init__(self, y_true, y_preds):
 

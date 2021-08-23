@@ -3,7 +3,7 @@ import pandas as pd
 
 from sklearn.model_selection import KFold, train_test_split
 
-from .models import PredictionsResult, train_test, select_features
+from .models import PredictionsResult, train_test, select_features, CVPredictionsResult
 from .utils import get_x, get_x_y, get_tqdm_iter
 
 
@@ -59,7 +59,8 @@ class NestedCrossValidator(FeatureSelectionModel):
 
     def get_features(self):
         np.random.seed(self.random_state)
-        y_preds = np.empty((self.df.shape[0]))
+        y_preds = []
+        y_true = []
         features = []
         cv = KFold(n_splits=self.n_splits, shuffle=True)
         for train_idx, test_idx in get_tqdm_iter(cv.split(self.df), self.p_bar, total=self.n_splits):
@@ -72,11 +73,12 @@ class NestedCrossValidator(FeatureSelectionModel):
 
             new_features, _, _, = select_features(self.df.loc[train_idx], self.features, self.model, self.metric, n_repeats=self.n_repeats, verbose=self.verbose, p_bar=self.p_bar-1)
             X_train, y_train = get_x_y(self.df.loc[train_idx], new_features)
-            X_test = get_x(self.df.loc[test_idx], new_features)
+            X_test, y_test = get_x_y(self.df.loc[test_idx], new_features)
             self.model.fit(X_train, y_train)
             features.append(new_features)
-            y_preds[test_idx] = self.model.predict_proba(X_test)[:, 1]
-        return features, PredictionsResult(self.df['target'], y_preds)
+            y_preds.append(self.model.predict_proba(X_test)[:, 1])
+            y_true.append(y_test)
+        return features, CVPredictionsResult(y_true, y_preds)
 
 
 class MultiSegementTraiTest(TrainTestValidator):
