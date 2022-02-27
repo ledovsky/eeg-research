@@ -8,14 +8,17 @@ sys.path.append('../pipeline')
 from features import get_feature_build_func
 
 
-data_path_1 = '../../../preproc_data/depr/epoch_1'
-data_path_2 = '../../../preproc_data/depr/epoch_3'
-data_paths = [
-    data_path_1,
-    data_path_2
-]
-out_path = '../../own_data/191104_depr_splits_features'
+# data_path_1 = '../../../preproc_data/depr/epoch_1'
+# data_path_2 = '../../../preproc_data/depr/epoch_3'
+# data_paths = [
+#     data_path_1,
+#     data_path_2
+# ]
+# out_path = '../../own_data/191104_depr_splits_features'
 
+data_paths = ['../data/asd/csv']
+
+out_path = '../data/asd/features'
 
 # split length, epoch_idx, start_sec, end_sec
 
@@ -66,6 +69,7 @@ feature_methods = [
     'env-beta',
     'env-theta',
     'bands',
+    'psi'
 ]
 
 
@@ -83,7 +87,8 @@ def get_split_path(split, path):
 
 
 def calc_features_by_splits():
-    splits = splits_10sec + splits_20sec + splits_30sec + splits_60sec
+    # splits = splits_10sec + splits_20sec + splits_30sec + splits_60sec
+    splits = [('all', 0, 0, 20), ('val', 0, 20, 40)]
     for split in splits:
         df_filter_func = get_df_filter_func(split[2], split[3])
         for method in feature_methods:

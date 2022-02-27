@@ -415,7 +415,7 @@ def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeat
             else:
                 return False
         X = df[cur_features].fillna(0).values
-        res = repeated_kfold(X, y, model, n_splits=10, n_repeats=n_repeats)
+        res = repeated_kfold(X, y, model, n_splits=5, n_repeats=n_repeats)
         if verbose:
             print(f'{res.roc_aucs.mean():4f}\t{res.accs.mean():4f}')
             pass
@@ -430,7 +430,7 @@ def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeat
             }
             if df_val is not None:
                 X = df_val[cur_features].fillna(0).values
-                val_res = repeated_kfold(X, y_val, model, n_splits=10, n_repeats=n_repeats)
+                val_res = repeated_kfold(X, y_val, model, n_splits=5, n_repeats=n_repeats)
                 d['score_val'] = get_metric(val_res).mean()
                 d['score_val_std'] = get_metric(val_res).std()
             hist.append(d)
