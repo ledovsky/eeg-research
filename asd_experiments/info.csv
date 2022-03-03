@@ -1,0 +1,328 @@
+,fn,target,dataset_name,sfreq,age,seconds
+0,sedrykyn_sasha_7_og_concat_19.raw.fif,asd,asd,125,7,47.0
+1,roma gritchin _5_fon_open_19.raw.fif,asd,asd,125,5,33.0
+2,boy5_asd_og_new_19.raw.fif,asd,asd,125,5,50.0
+3,viflyancev_4_asd_fon__concat_19.raw.fif,asd,asd,125,4,58.0
+4,andrey_matveev3_asd_new_19.raw.fif,asd,asd,125,3,50.0
+5,arsen_kabrelyn_7_fon_19.raw.fif,asd,asd,125,7,79.0
+6,kravcov_vlad_8_fon_19.raw.fif,asd,asd,125,8,38.0
+7,girl_6_asd_og_19.raw.fif,asd,asd,125,6,57.0
+8,kalanova_u_3_asd_fon_19.raw.fif,asd,asd,125,3,39.0
+9,anton_6_asd_19.raw.fif,asd,asd,125,6,39.0
+10,tima mishin 4_fon_open_new_19.raw.fif,asd,asd,125,4,37.0
+11,haritonov_3_asd_fon_concat_19.raw.fif,asd,asd,125,3,38.0
+12,vradii_maks_9_fon_19.raw.fif,asd,asd,125,9,67.0
+13,vanya_tryapish7_fon_19.raw.fif,asd,asd,125,7,34.0
+14,16m_au_fon_19.raw.fif,asd,asd,125,16,49.0
+15,senkovec_7_asd_new_19.raw.fif,asd,asd,125,7,68.0
+16,dima sherbakov_5_fon_new_19.raw.fif,asd,asd,125,5,123.0
+17,aksuk_nikita_11_eo_long_19.raw.fif,asd,asd,125,11,70.0
+18,ira_5_fon_long_19.raw.fif,asd,asd,125,5,61.0
+19,voshin_roma_bu_8_19.raw.fif,asd,asd,125,8,37.0
+20,tolstokorov_15_asd_fon_concat_19.raw.fif,asd,asd,125,15,50.0
+21,boy7_asd_19.raw.fif,asd,asd,125,7,47.0
+22,katy_zenkina_5_og_19.raw.fif,asd,asd,125,5,47.0
+23,boy_12_0204_fon_long_19.raw.fif,asd,asd,125,12,51.0
+24,dekanev_sven_19.raw.fif,asd,asd,125,19,44.0
+25,гришин_6_19.raw.fif,asd,asd,125,6,55.0
+26,darenkov_7_asd_org_new_19.raw.fif,asd,asd,125,7,104.0
+27,kozin_5_asd_new_19.raw.fif,asd,asd,125,5,51.0
+28,grishin_i_asd_6_fon_19.raw.fif,asd,asd,125,6,60.0
+29,boy8_og_19.raw.fif,asd,asd,125,8,46.0
+30,koroleva_4_asd_aba_new_19.raw.fif,asd,asd,125,4,51.0
+31,stepanida_7_asd_new_19.raw.fif,asd,asd,125,7,33.0
+32,gagik_7_asd_new_19.raw.fif,asd,asd,125,7,34.0
+33,masha_kaldary_3_fon_19.raw.fif,asd,asd,125,3,36.0
+34,dikih_valera_3_asd_aba_fon_concat_19.raw.fif,asd,asd,125,3,78.0
+35,nikitin_10asd_new_19.raw.fif,asd,asd,125,10,91.0
+36,arkasha_5_asd2304_og_19.raw.fif,asd,asd,125,5,69.0
+37,zhavoronkova_16_asd_fon_19.raw.fif,asd,asd,125,16,75.0
+38,trifonova_alisa_6_og_concat_19.raw.fif,asd,asd,125,6,40.0
+39,nikita 3_fon_19.raw.fif,asd,asd,125,3,53.0
+40,gavriil_4_fon_long_19.raw.fif,asd,asd,125,4,97.0
+41,churkin_georgiy_6_asd_fon_19.raw.fif,asd,asd,125,6,103.0
+42,dev15_nf_fon_19.raw.fif,asd,asd,125,15,80.0
+43,grishin_asd_6_19.raw.fif,asd,asd,125,6,142.0
+44,belousenko_serg_8_fon_19.raw.fif,asd,asd,125,8,37.0
+45,boy7_asd_og_19.raw.fif,asd,asd,125,7,54.0
+46,ernest_egrebekov_7_fon_long_19.raw.fif,asd,asd,125,7,49.0
+47,zerkunov_sasha_4_fon_19.raw.fif,asd,asd,125,4,86.0
+48,boy_3_asd_0_19.raw.fif,asd,asd,125,3,110.0
+49,olhovatov_arsenii_5_fon_19.raw.fif,asd,asd,125,5,41.0
+50,savva ponamorev_7_19.raw.fif,asd,asd,125,7,46.0
+51,tuktyaev_6_asd_fon_19.raw.fif,asd,asd,125,6,52.0
+52,eliseev_arman_6_asd_new_19.raw.fif,asd,asd,125,6,56.0
+53,bondar_2_asd_og_19.raw.fif,asd,asd,125,2,42.0
+54,boy_10_asd_open_19.raw.fif,asd,asd,125,10,32.0
+55,bobylev_6_asd_og_concat_19.raw.fif,asd,asd,125,6,45.0
+56,timofey_10_eo_long_19.raw.fif,asd,asd,125,10,46.0
+57,vitalik_vtornik_12_og_concat_new_19.raw.fif,asd,asd,125,12,39.0
+58,01_михна_степан12_19.raw.fif,asd,asd,125,1,137.0
+59,kazankov_arsenii_5_asd_og_19.raw.fif,asd,asd,125,5,51.0
+60,stepa_dikanev_7_fon_open_19.raw.fif,asd,asd,125,7,36.0
+61,male_7_asd_fon_new_19.raw.fif,asd,asd,125,7,117.0
+62,yakupov_5_asd_aba_fon_19.raw.fif,asd,asd,125,5,84.0
+63,nabatnikova_7_asd_new_19.raw.fif,asd,asd,125,7,58.0
+64,komleva_org7_asd_19.raw.fif,asd,asd,125,7,35.0
+65,farhat_4_asd_aba_new_19.raw.fif,asd,asd,125,4,32.0
+66,fomicheva_3_asd_new_19.raw.fif,asd,asd,125,3,68.0
+67,dekanev_stepan_7_fon_19.raw.fif,asd,asd,125,7,46.0
+68,komleva_org_asd_19.raw.fif,asd,asd,125,19,35.0
+69,milaev_arkasha_5_open_19.raw.fif,asd,asd,125,5,63.0
+70,ivanov_3_asd_fon_concat_19.raw.fif,asd,asd,125,3,58.0
+71,volodkin_ilia_3_fon_long_19.raw.fif,asd,asd,125,3,68.0
+72,male_5_asd_og_19.raw.fif,asd,asd,125,5,55.0
+73,sinegaeva_14_asd_new_19.raw.fif,asd,asd,125,14,78.0
+74,eliseev_vycheslav_8_fon_long_19.raw.fif,asd,asd,125,8,106.0
+75,m3_asd_fon_19.raw.fif,asd,asd,125,3,39.0
+76,krasnov_5_asd_fon_19.raw.fif,asd,asd,125,5,39.0
+77,viflyancev_4_asd_new_19.raw.fif,asd,asd,125,4,32.0
+78,girl_5_asd_19.raw.fif,asd,asd,125,5,42.0
+79,m3_sashazigunov_open_19.raw.fif,asd,asd,125,3,40.0
+80,g_anton_7_asd_new_19.raw.fif,asd,asd,125,7,81.0
+81,boy_8_asd_new_19.raw.fif,asd,asd,125,8,92.0
+82,kazancev_3_asd_aba_fon_19.raw.fif,asd,asd,125,3,61.0
+83,mark_6_asd_19.raw.fif,asd,asd,125,6,65.0
+84,boy5_asd_fon_19.raw.fif,asd,asd,125,5,64.0
+85,roma inutin_9_fon_open_19.raw.fif,asd,asd,125,9,48.0
+86,boy_3_asd_19.raw.fif,asd,asd,125,3,150.0
+87,chernovol_3_asd_aba_fon_19.raw.fif,asd,asd,125,3,35.0
+88,arsen_7_asd_19.raw.fif,asd,asd,125,7,66.0
+89,semen_4_asd_19.raw.fif,asd,asd,125,4,49.0
+90,panosyan_3_asd_fon_concat_19.raw.fif,asd,asd,125,3,51.0
+91,male_8_asd_new_19.raw.fif,asd,asd,125,8,108.0
+92,betanov_vitalii_3_fon_19.raw.fif,asd,asd,125,3,38.0
+93,minenko_dima_7_fon_19.raw.fif,asd,asd,125,7,34.0
+94,kabrelyn_arcen_7_fon_19.raw.fif,asd,asd,125,7,47.0
+95,rojkov_5_asd_fon_concat_19.raw.fif,asd,asd,125,5,53.0
+96,male_5_asd_new_00_19.raw.fif,asd,asd,125,5,101.0
+97,boy3_asd_fon_19.raw.fif,asd,asd,125,3,66.0
+98,shmelev_2_asd_aba_new_19.raw.fif,asd,asd,125,2,43.0
+99,m5_asd_fon_19.raw.fif,asd,asd,125,5,69.0
+100,minaev alesha 4_fon_19.raw.fif,asd,asd,125,4,31.0
+101,m7_asd_org_19.raw.fif,asd,asd,125,7,39.0
+102,fatuhin_ivan_fon8_long_19.raw.fif,asd,asd,125,8,59.0
+103,gucheva_6_asd_aba_new_19.raw.fif,asd,asd,125,6,57.0
+104,katy_5_fon_19.raw.fif,asd,asd,125,5,40.0
+105,boy_12_1604_open_19.raw.fif,asd,asd,125,12,93.0
+106,ernest_7_asd_19.raw.fif,asd,asd,125,7,43.0
+107,boy3_asd_19.raw.fif,asd,asd,125,3,174.0
+108,malevanniy_3_asd_aba_fon_19.raw.fif,asd,asd,125,3,103.0
+109,juravleva_3_asd_fon_19.raw.fif,asd,asd,125,3,46.0
+110,petrenko_3_asd_fon_19.raw.fif,asd,asd,125,3,33.0
+111,shmelev_2_asd_aba_fon_concat_19.raw.fif,asd,asd,125,2,37.0
+112,male_6_asd_new_19.raw.fif,asd,asd,125,6,87.0
+113,bejanov_gosha_fon6_19.raw.fif,asd,asd,125,6,71.0
+114,vania_8_asd_19.raw.fif,asd,asd,125,8,71.0
+115,dima_cherkasov_12_open_19.raw.fif,asd,asd,125,12,92.0
+116,jura_ira_3_asd_new_19.raw.fif,asd,asd,125,3,64.0
+117,16m_as_fon_19.raw.fif,asd,asd,125,16,123.0
+118,andrei_7_asd_19.raw.fif,asd,asd,125,7,46.0
+119,boy4_asd_19.raw.fif,asd,asd,125,4,47.0
+120,boy_9_asd_fon_19.raw.fif,asd,asd,125,9,60.0
+121,boy2_asd_f_new_19.raw.fif,asd,asd,125,2,41.0
+122,mash_maria_fon_12_19.raw.fif,asd,asd,125,12,34.0
+123,timur_jemalov_12_fon_19.raw.fif,asd,asd,125,12,53.0
+124,kalaitanova_asd_3_19.raw.fif,asd,asd,125,3,40.0
+125,skopinceva_16_asd_fon_19.raw.fif,asd,asd,125,16,77.0
+126,david2_asd_f_new_19.raw.fif,asd,asd,125,2,51.0
+127,f3_marina_open_19.raw.fif,asd,asd,125,3,68.0
+128,pertsuliani_5_asd_new_19.raw.fif,asd,asd,125,5,57.0
+129,boy8_asd_fon_19.raw.fif,asd,asd,125,8,62.0
+130,hartonov-3_asd_19.raw.fif,asd,asd,125,3,65.0
+131,alex_3_asd_19.raw.fif,asd,asd,125,3,40.0
+132,m3_andrey_fon_long_19.raw.fif,asd,asd,125,3,82.0
+133,roma_zulitov_9_fon_19.raw.fif,asd,asd,125,9,40.0
+134,boy_5_asd_new_19.raw.fif,asd,asd,125,5,63.0
+135,diana_7_asd_new_19.raw.fif,asd,asd,125,7,44.0
+136,kuznecov_2_asd_fon_19.raw.fif,asd,asd,125,2,44.0
+137,matvei plotnikov 3_fon_19.raw.fif,asd,asd,125,3,48.0
+138,ulihinyan_asd_6_m_19.raw.fif,asd,asd,125,6,48.0
+139,fill_asd_7_m_19.raw.fif,asd,asd,125,7,120.0
+140,arseniy_petrov7_fon_19.raw.fif,asd,asd,125,7,39.0
+141,nikolaenko_14_asd_fon_concat_19.raw.fif,asd,asd,125,14,51.0
+142,ivanov_misha_8_fon_19.raw.fif,asd,asd,125,8,34.0
+143,15m_lp_fon_19.raw.fif,asd,asd,125,15,115.0
+144,churkin_g_8_asd_fon_19.raw.fif,asd,asd,125,8,125.0
+145,maksim_9_fon_open_19.raw.fif,asd,asd,125,9,63.0
+146,fil_s_7_asd_fon_19.raw.fif,asd,asd,125,7,93.0
+147,male5_og_19.raw.fif,typical,typical,125,5,33.0
+148,boy2_norm_org_19.raw.fif,typical,typical,125,2,55.0
+149,mironova_liza_7_org_new_19.raw.fif,typical,typical,125,7,76.0
+150,boy_8_org_19.raw.fif,typical,typical,125,8,82.0
+151,timonenkova_8_fon_19.raw.fif,typical,typical,125,8,37.0
+152,kostenko_9_norm_fon0_concat_19.raw.fif,typical,typical,125,9,114.0
+153,dasha_8_soloveva_fon_open_long_19.raw.fif,typical,typical,125,8,112.0
+154,katya_baloyan_5_19.raw.fif,typical,typical,125,5,81.0
+155,harlamova_6_og_19.raw.fif,typical,typical,125,6,123.0
+156,barsht_11_norm_org_19.raw.fif,typical,typical,125,11,161.0
+157,efremov_n_7_norm_fon_19.raw.fif,typical,typical,125,7,38.0
+158,solovieva_o_5_19.raw.fif,typical,typical,125,5,59.0
+159,akinfova_liza_4_goda_19.raw.fif,typical,typical,125,4,32.0
+160,nikita_7_organ_19.raw.fif,typical,typical,125,7,93.0
+161,ignat_8_fon_long_concat_19.raw.fif,typical,typical,125,8,106.0
+162,sveta_4_norm_19.raw.fif,typical,typical,125,4,50.0
+163,alisa_7_org_norm_19.raw.fif,typical,typical,125,7,58.0
+164,kislykov nikita 3_fon_open_19.raw.fif,typical,typical,125,3,43.0
+165,dasha_sidorina_7_fon_19.raw.fif,typical,typical,125,7,51.0
+166,leshka_a_11_norm_fon_19.raw.fif,typical,typical,125,11,51.0
+167,komlev_13_epi_19.raw.fif,typical,typical,125,13,54.0
+168,артем саркис 6 л эква_ог_19.raw.fif,typical,typical,125,6,82.0
+169,efremov_a_4_norm_fon_19.raw.fif,typical,typical,125,4,52.0
+170,vladik_5_og_19.raw.fif,typical,typical,125,5,62.0
+171,serega_org_asd_15_19.raw.fif,typical,typical,125,15,32.0
+172,девочка_5_19.raw.fif,typical,typical,125,5,52.0
+173,kachura_6_norm_fon_concat_19.raw.fif,typical,typical,125,6,38.0
+174,даниил котков от даши 9_ог_19.raw.fif,typical,typical,125,9,38.0
+175,миша лапчинский 9 от даши_ог_19.raw.fif,typical,typical,125,9,38.0
+176,petya_8_og_concat_19.raw.fif,typical,typical,125,8,34.0
+177,дев 10 норм_19.raw.fif,typical,typical,125,10,41.0
+178,m_5_norm_fon_19.raw.fif,typical,typical,125,5,49.0
+179,oleg_9_norm_19.raw.fif,typical,typical,125,9,65.0
+180,ruslan_2_org_fon_19.raw.fif,typical,typical,125,2,31.0
+181,boy_10_norm_og_19.raw.fif,typical,typical,125,10,39.0
+182,misha_9_norm_org_new_19.raw.fif,typical,typical,125,9,47.0
+183,soloma_5_norm_og_19.raw.fif,typical,typical,125,5,44.0
+184,sasha_5_og_19.raw.fif,typical,typical,125,5,37.0
+185,ukraimceva_8_norm_fon_19.raw.fif,typical,typical,125,8,34.0
+186,filimonov_4_org_norm_19.raw.fif,typical,typical,125,4,59.0
+187,руслан 2года_fon_19.raw.fif,typical,typical,125,2,57.0
+188,федя_10_ог_19.raw.fif,typical,typical,125,10,40.0
+189,nimirov_vlad_13_tbi_ог_19.raw.fif,typical,typical,125,13,96.0
+190,ершов_16_19.raw.fif,typical,typical,125,16,64.0
+191,boy_javnis3_fon_new_19.raw.fif,typical,typical,125,3,115.0
+192,рк_16_м_19.raw.fif,typical,typical,125,16,63.0
+193,ева 9 норм_19.raw.fif,typical,typical,125,9,35.0
+194,alex5_male_fon_19.raw.fif,typical,typical,125,5,45.0
+195,катя балоян 5_норма_ог_19.raw.fif,typical,typical,125,5,91.0
+196,dev_10_norm_eng_new_19.raw.fif,typical,typical,125,10,124.0
+197,alisa_3_sdvig_stran_og_19.raw.fif,typical,typical,125,3,90.0
+198,m2-fon_long_19.raw.fif,typical,typical,125,2,49.0
+199,nastya_devchenko_6_og_19.raw.fif,typical,typical,125,6,55.0
+200,marina_7_norm_19.raw.fif,typical,typical,125,7,171.0
+201,chudinova_s_7_norm_fon_19.raw.fif,typical,typical,125,7,69.0
+202,burdakov_a_9_norm_fon_19.raw.fif,typical,typical,125,9,51.0
+203,vanya_7_og_19.raw.fif,typical,typical,125,7,65.0
+204,сабельников макар_4_ог_19.raw.fif,typical,typical,125,4,32.0
+205,max4_fon_new_19.raw.fif,typical,typical,125,4,35.0
+206,лева 9 норма_19.raw.fif,typical,typical,125,9,45.0
+207,loskutov_s_10_norm_19.raw.fif,typical,typical,125,10,31.0
+208,ira osipova_5_fon_open_19.raw.fif,typical,typical,125,5,44.0
+209,sivuhin_y_5_norm_new_19.raw.fif,typical,typical,125,5,45.0
+210,mitrofanov_7_org_new_19.raw.fif,typical,typical,125,7,87.0
+211,larisa_12_19.raw.fif,typical,typical,125,12,70.0
+212,бурдаков_9_19.raw.fif,typical,typical,125,9,58.0
+213,valera_sotnikov6_og_19.raw.fif,typical,typical,125,6,71.0
+214,semiryajko_i_10_norm_fon-09_19.raw.fif,typical,typical,125,10,36.0
+215,morozov_10_og_new_19.raw.fif,typical,typical,125,10,59.0
+216,katya_6_og_new_19.raw.fif,typical,typical,125,6,54.0
+217,sonya_8_norm_19.raw.fif,typical,typical,125,8,37.0
+218,bortunov_6_norm_19.raw.fif,typical,typical,125,6,43.0
+219,minaev_alesha_4_fon_new_19.raw.fif,typical,typical,125,4,35.0
+220,volodkovich_6_org_fon_19.raw.fif,typical,typical,125,6,66.0
+221,m6_fon_19.raw.fif,typical,typical,125,6,36.0
+222,f3_marina_19.raw.fif,typical,typical,125,3,36.0
+223,loskutova_e_4_norm_new_19.raw.fif,typical,typical,125,4,59.0
+224,osipkova_m_14_norm_fon_19.raw.fif,typical,typical,125,14,54.0
+225,gusarov_lesha_6_fon_concat_new_19.raw.fif,typical,typical,125,6,55.0
+226,smagin_i_12_norm_fon_19.raw.fif,typical,typical,125,12,64.0
+227,dev11_og_19.raw.fif,typical,typical,125,11,44.0
+228,female_11_mtbi_t1649_og_19.raw.fif,typical,typical,125,11,57.0
+229,varya_ponamareva_6_og_19.raw.fif,typical,typical,125,6,48.0
+230,bychkov_12_og_19.raw.fif,typical,typical,125,12,51.0
+231,акифонов егор 9 от даши_ог_19.raw.fif,typical,typical,125,9,34.0
+232,kirilichenkova_5_org_new_19.raw.fif,typical,typical,125,5,46.0
+233,mustafina_karina_6_fon_19.raw.fif,typical,typical,125,6,36.0
+234,dev4_fonopen_new_19.raw.fif,typical,typical,125,4,45.0
+235,zubetz_nikita_5_og_19.raw.fif,typical,typical,125,5,75.0
+236,lesha_morschinin_5_og_19.raw.fif,typical,typical,125,5,58.0
+237,churkin_8_norm_19.raw.fif,typical,typical,125,8,65.0
+238,ladonikova_l_12_norm_fon_19.raw.fif,typical,typical,125,12,103.0
+239,sivuhin_m_7_norm_fon_19.raw.fif,typical,typical,125,7,32.0
+240,ershov_sergei_12_org_19.raw.fif,typical,typical,125,12,54.0
+241,diana_7_og_19.raw.fif,typical,typical,125,7,40.0
+242,fomicheva_3_org_new_19.raw.fif,typical,typical,125,3,67.0
+243,чепурной вася_4_ог_19.raw.fif,typical,typical,125,4,60.0
+244,nikitin_10_org_new_new_19.raw.fif,typical,typical,125,10,159.0
+245,bobylev_ilja_6_fon_new_19.raw.fif,typical,typical,125,6,36.0
+246,nikita_10_norm_19.raw.fif,typical,typical,125,10,45.0
+247,olexa_10_norm_fon_19.raw.fif,typical,typical,125,10,52.0
+248,kiril_4_fon_open_long_19.raw.fif,typical,typical,125,4,55.0
+249,zaicev_7_norm_fon_19.raw.fif,typical,typical,125,7,46.0
+250,иван 9 норм_19.raw.fif,typical,typical,125,9,55.0
+251,sasha_4_norm_19.raw.fif,typical,typical,125,4,71.0
+252,dudko_10_norm_fon_19.raw.fif,typical,typical,125,10,70.0
+253,иванова_свп_19.raw.fif,typical,typical,125,19,130.0
+254,dev9_trevozhnost_og_19.raw.fif,typical,typical,125,9,56.0
+255,yaroslav_9_og_19.raw.fif,typical,typical,125,9,58.0
+256,leny 8_fonopen_19.raw.fif,typical,typical,125,8,66.0
+257,merkulin_ilja_8_fon_new_19.raw.fif,typical,typical,125,8,34.0
+258,tolokonnikov_9_fon_new_19.raw.fif,typical,typical,125,9,65.0
+259,emina_6_og_19.raw.fif,typical,typical,125,6,50.0
+260,girl_4_norm_new_19.raw.fif,typical,typical,125,4,77.0
+261,миронова_7_19.raw.fif,typical,typical,125,7,33.0
+262,сережа 5_ог_19.raw.fif,typical,typical,125,5,36.0
+263,male_5_norm_fon_19.raw.fif,typical,typical,125,5,37.0
+264,leva_2_norm_new_19.raw.fif,typical,typical,125,2,53.0
+265,javnis_a_3_norm_fon_19.raw.fif,typical,typical,125,3,46.0
+266,fedorova_10_org_norm_19.raw.fif,typical,typical,125,10,50.0
+267,mashunya_9_norm_19.raw.fif,typical,typical,125,9,73.0
+268,goloshapov_pety_6_fon_long_19.raw.fif,typical,typical,125,6,52.0
+269,m3_andrey_og_19.raw.fif,typical,typical,125,3,66.0
+270,marina 8 normal_19.raw.fif,typical,typical,125,8,141.0
+271,eva_3_norm_org_new_19.raw.fif,typical,typical,125,3,49.0
+272,maksim_9_og_concat_19.raw.fif,typical,typical,125,9,46.0
+273,соловьева_4_19.raw.fif,typical,typical,125,4,304.0
+274,ivanova_10_norm_og_19.raw.fif,typical,typical,125,10,65.0
+275,ikaev_11_org_fon_concat_19.raw.fif,typical,typical,125,11,46.0
+276,chulkova_9_fon_19.raw.fif,typical,typical,125,9,58.0
+277,makar_4_norm_19.raw.fif,typical,typical,125,4,41.0
+278,andrey_6_norm_new_19.raw.fif,typical,typical,125,6,89.0
+279,kiril_2-fon_long_19.raw.fif,typical,typical,125,2,112.0
+280,radevich_3_norm_fon_19.raw.fif,typical,typical,125,3,43.0
+281,vladkislykov3_fon_19.raw.fif,typical,typical,125,3,33.0
+282,korovin_v_5_norm_19.raw.fif,typical,typical,125,5,46.0
+283,lera 11 fon_19.raw.fif,typical,typical,125,11,48.0
+284,mashaershova5_f_new_19.raw.fif,typical,typical,125,5,47.0
+285,smagin_u_10_norm_fon_19.raw.fif,typical,typical,125,10,71.0
+286,коровин_5_19.raw.fif,typical,typical,125,5,218.0
+287,gusarov_11_norm_19.raw.fif,typical,typical,125,11,83.0
+288,фа_13_19.raw.fif,typical,typical,125,13,55.0
+289,emir_5_og_19.raw.fif,typical,typical,125,5,37.0
+290,ananiev_igor_6_fon_long_19.raw.fif,typical,typical,125,6,88.0
+291,bortunov_o_6_norm_fon_19.raw.fif,typical,typical,125,6,55.0
+292,dany_15_ot_jeni_fon_long_19.raw.fif,typical,typical,125,15,54.0
+293,настя абрамова_эква_10_ог_19.raw.fif,typical,typical,125,10,37.0
+294,ярослав_9_сдвг_т911_ог_19.raw.fif,typical,typical,125,9,58.0
+295,меркулин илья 8 от даши_ог_19.raw.fif,typical,typical,125,8,34.0
+296,mihna_12_orgasd_fon_0_19.raw.fif,typical,typical,125,12,53.0
+297,чуркин_8_19.raw.fif,typical,typical,125,8,136.0
+298,nikita_3_og_concat_new_19.raw.fif,typical,typical,125,3,36.0
+299,akinfotov_9_norm_new_19.raw.fif,typical,typical,125,9,38.0
+300,valiev_2_org_fon_01_concat_19.raw.fif,typical,typical,125,2,35.0
+301,kirgav_m_4_fon_long_19.raw.fif,typical,typical,125,4,61.0
+302,serega_org_15_19.raw.fif,typical,typical,125,15,32.0
+303,vova_5_norm_fon_new_19.raw.fif,typical,typical,125,5,58.0
+304,boy4_fon_19.raw.fif,typical,typical,125,4,33.0
+305,liza_alekseeva_6_norma_og_concat_19.raw.fif,typical,typical,125,6,50.0
+306,дев 9 норм_19.raw.fif,typical,typical,125,9,66.0
+307,osunova_a_5_norm_fon_19.raw.fif,typical,typical,125,5,48.0
+308,михаил сорокоренский 5_ог_19.raw.fif,typical,typical,125,5,79.0
+309,akulov_misha_10_norm_new_19.raw.fif,typical,typical,125,10,58.0
+310,sabelnikov_makar_4_fon_19.raw.fif,typical,typical,125,4,53.0
+311,мариша 8_19.raw.fif,typical,typical,125,8,31.0
+312,mironova_l_7_norm_fon_19.raw.fif,typical,typical,125,7,72.0
+313,dev12_norm_fon_long_19.raw.fif,typical,typical,125,12,68.0
+314,zhen11_norm_org_19.raw.fif,typical,typical,125,11,56.0
+315,fatuhin_fedor_9_fon_long_19.raw.fif,typical,typical,125,9,63.0
+316,boy_11_org_og_19.raw.fif,typical,typical,125,11,80.0
+317,sotnikov_6_norm_f_19.raw.fif,typical,typical,125,6,76.0
+318,roma_gritchin_5_fon_open_19.raw.fif,typical,typical,125,5,32.0
+319,качалов максим 5 от даши_ог_19.raw.fif,typical,typical,125,5,52.0
+320,sonya_mettelman_8_t947_og_19.raw.fif,typical,typical,125,8,34.0
+321,boy_7_n_fon_19.raw.fif,typical,typical,125,7,36.0
+322,artem_sarkis_6_fon_19.raw.fif,typical,typical,125,6,44.0
+323,gusarova_9_norm_19.raw.fif,typical,typical,125,9,83.0
+324,акулов миша 10 от даши_ог_19.raw.fif,typical,typical,125,10,42.0
+325,жавнис_3_19.raw.fif,typical,typical,125,3,386.0
+326,никита 7 от даши_ог_19.raw.fif,typical,typical,125,7,57.0
