@@ -11,13 +11,14 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import LeaveOneOut, KFold, train_test_split
-from sklearn.metrics import roc_auc_score, accuracy_score
+from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 from sklearn.preprocessing import StandardScaler
 
 import xgboost as xgb
 
 from .utils import get_tqdm_iter
-
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 def create_or_append(df, path):
     if exists(path):
@@ -250,6 +251,15 @@ class PredictionsResult:
     def acc(self):
         return accuracy_score(self.y_true, self.y_pred > 0.5)
 
+    @property
+    def f1(self):
+        return f1_score(self.y_true, self.y_pred > 0.5)
+
+    def draw_confusion_matrix(self,model):
+        cm = confusion_matrix(self.y_true, self.y_pred > 0.5, labels=model.lr.classes_)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.lr.classes_)
+        disp.plot()
+        plt.show()
 
 class RepeatedPredictionsResult:
     def __init__(self, y_true, y_preds):
@@ -261,6 +271,7 @@ class RepeatedPredictionsResult:
         self.y_preds = y_preds.copy()
         self._roc_aucs = None
         self._accs = None
+        self._f1s =None
 
     @property
     def roc_aucs(self):
@@ -280,6 +291,15 @@ class RepeatedPredictionsResult:
             self._accs = np.array(self._accs)
         return self._accs
 
+    @property
+    def f1s(self):
+        if self._f1s is None:
+            self._f1s = []
+            for i in range(self.y_preds.shape[1]):
+                self._f1s.append(f1_score(self.y_true, self.y_preds[:, i] > 0.5))
+            self._f1s = np.array(self._f1s)
+        return self._f1s
+
 
 def kfold(X, y, model, n_splits=10, random_state=42, to_drop=None):
     """
@@ -296,7 +316,7 @@ def kfold(X, y, model, n_splits=10, random_state=42, to_drop=None):
         res: PredictionsResult
     """
 
-    model.set_params(random_state=random_state)
+    #model.set_params(random_state=random_state)
     y_pred = np.zeros(shape=y.shape)
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
 
@@ -352,6 +372,8 @@ def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeat
             return data.roc_aucs
         if metric == 'acc':
             return data.accs
+        if metric =="f1-score":
+            return data.f1s
 
     if order_func is None:
         X_sc = StandardScaler().fit_transform(X)
@@ -422,7 +444,6 @@ def select_features(df, features, model, metric='roc-auc', df_val=None, n_repeat
         print('feature_name    \troc-auc \taccuracy')
 
     features = new_features.copy()
-
     for feature in get_tqdm_iter(features, p_bar):
         if verbose:
             print(f'{feature:16}', end='\t')

@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from scipy import signal
 from scipy.signal import hilbert
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, differential_entropy
 
 from tqdm import tqdm
 
@@ -26,6 +26,8 @@ def get_func_by_method(method_name):
         'env-theta': partial(get_envelope_feats, band='theta'),
         'bands': get_bands_feats,
         'psi': get_psi_feats,
+        'fr-assym': get_frontal_asymmetry,
+        'asMap': get_asMap
     }
     if method_name in methods:
         return methods[method_name]
@@ -104,6 +106,49 @@ def get_filter(sfreq=125., band='alpha'):
     filt = signal.firwin2(n, freq, gain, nyq=nyq)
 
     return filt
+
+def get_frontal_asymmetry(df, bands=('alpha', 'beta', 'gamma', 'theta'), sfreq=125., nperseg=1024):
+    feats=get_bands_feats(df, bands=bands, sfreq=sfreq, nperseg=nperseg)
+    frontal_assymetry ={}
+    for band in bands:
+        f3 =feats[get_col_name('bands', band, "F3")]
+        f4 =feats[get_col_name('bands', band, "F4")]
+        frontal_assymetry[get_col_name('bands', band, "F3_f4")] =(f3-f4)/(f3+f4)
+    return frontal_assymetry
+
+def get_asMap(df, bands=('alpha', 'beta', 'gamma', 'theta')):
+    feats=get_bands_entropy(df, bands=bands)
+    frontal_assymetry ={}
+    channels = df.columns
+    for band in bands:
+        for channel1 in channels:
+            for i in range(0, int(len(channels)/2)+1):
+                channel2= channels[i]
+                if channel1!=channel2:
+                    c1 =feats[get_col_name('bands', band, channel1)]
+                    c2 =feats[get_col_name('bands', band, channel2)]
+                    frontal_assymetry[get_col_name('bands', band, f"{channel1}_{channel2}")] =(c1-c2)/(c1+c2)
+
+    return frontal_assymetry
+
+def get_bands_entropy(df, bands=('alpha', 'beta', 'gamma', 'theta'), sfreq=125., nperseg=1024):
+    channels = df.columns
+
+    feats = {}
+
+    for ch in channels:
+        freqs, times,psds = signal.stft(df[ch],sfreq)
+        #freqs, psds = signal.welch(df[ch], sfreq, nperseg=nperseg)
+        psd_df = pd.DataFrame(data={'freqs': freqs, 'psds': np.abs(psds).tolist()})
+        for band in bands:
+            feats[get_col_name('bands', band, ch)]=differential_entropy(np.concatenate(psd_df.loc[
+                    (psd_df['freqs'] >= band_bounds[band][0]) &
+                    (psd_df['freqs'] <= band_bounds[band][1]),
+                    'psds'].to_numpy()))
+
+
+    return feats
+
 
 
 def get_bands_feats(df, bands=('alpha', 'beta'), sfreq=125., nperseg=1024):
@@ -258,6 +303,8 @@ def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
         'env-theta': partial(get_envelope_feats, band='theta'),
         'bands': get_bands_feats,
         'psi': get_psi_feats,
+        'fr-assym': get_frontal_asymmetry,
+        'asMap': get_asMap
     }
 
     f = methods[method_name]
@@ -281,6 +328,7 @@ def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
             try:
                 path = join(data_path, row['fn'])
                 df = pd.read_csv(path, index_col='time')
+                del df['index']
                 df = df_filter_func(df)
                 new_row = f(df)
             except AssertionError:

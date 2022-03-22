@@ -61,7 +61,6 @@ class NestedCrossValidator(FeatureSelectionModel):
         y_preds = np.empty((self.df.shape[0]))
         cv = KFold(n_splits=self.n_splits, shuffle=True)
         for train_idx, test_idx in get_tqdm_iter(cv.split(self.df), self.p_bar, total=self.n_splits):
-
             if self.verbose:
                 print('Data split.')
                 print('train indices:', np.sort(train_idx), 

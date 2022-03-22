@@ -20,6 +20,8 @@ class StageManager(object):
         'f-env-theta': get_feature_build_func('env-theta'),
         'f-env': get_feature_build_func('env'),
         'f-coh': get_feature_build_func('coh'),
+        'f-fr-assym': get_feature_build_func('fr-assym'),
+        'f-asMap': get_feature_build_func('asMap')
         # model stages
     }
 
