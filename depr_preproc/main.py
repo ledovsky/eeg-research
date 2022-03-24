@@ -9,8 +9,8 @@ import mne
 from mne.io import read_raw_egi
 
 from paths import get_path_df
-from data_preparation import get_events, get_epoch, get_epoches
-from electrodes import electrode_mapping, electrodes
+from utils import get_events, get_epoch, get_epoches
+from electrodes import electrode_mapping,channels_to_use
 
 
 def main():
@@ -70,6 +70,14 @@ def create_if_necessary(path):
 
 def process_row(row, path_to_epoch_1, path_to_epoch_2, path_to_epoch_3, only_10_20=True):
     sample = read_raw_egi(row['full_path'], verbose=0)
+    sample = sample.rename_channels(electrode_mapping)
+    sample = sample.copy().pick_channels(channels_to_use+["epoc"])
+
+    ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
+    sample.set_montage(ten_twenty_montage)
+    sample.load_data()
+    sample.filter(l_freq=1, h_freq=50, method='iir')
+
     df = sample.to_data_frame()
 
     n_epoches = 3
@@ -87,42 +95,23 @@ def process_row(row, path_to_epoch_1, path_to_epoch_2, path_to_epoch_3, only_10_
 
     df = get_epoches(df, picks, events)
 
-    columns_to_use = [col for col in df.columns if col[0] == 'E']
-    df = df.loc[:, columns_to_use]
-
-    def replace_if_possible(col):
-        if col in electrode_mapping:
-            return electrode_mapping[col]
-        else:
-            return col
-
-    df.columns = [replace_if_possible(col) for col in df.columns]
-
-    df['cz'] = 0
-
-    if only_10_20:
-        df = df[electrodes]
-
     # save epoch 1
     df_epoch = get_epoch(df, 0)
-    df_epoch = df_epoch.iloc[:30000][::4]
-    df_epoch.to_csv(join(path_to_epoch_1, row['fn']))
+    df_epoch.to_csv(join(path_to_epoch_1, row['fn']),index=False)
 
     # save epoch 2
     idx = 1
     if row['fn'][:-4] == 'Smirnova rest 24-03':
         idx = 3
     df_epoch = get_epoch(df, idx)
-    df_epoch = df_epoch.iloc[:30000][::4]
-    df_epoch.to_csv(join(path_to_epoch_2, row['fn']))
+    df_epoch.to_csv(join(path_to_epoch_2, row['fn']),index=False)
 
     # save epoch 3
     idx = 2
     if row['fn'][:-4] == 'Saradjev rest 16-11':
         idx = 4
     df_epoch = get_epoch(df, idx)
-    df_epoch = df_epoch.iloc[:30000][::4]
-    df_epoch.to_csv(join(path_to_epoch_3, row['fn']))
+    df_epoch.to_csv(join(path_to_epoch_3, row['fn']),index=False)
 
 
 if __name__ == '__main__':

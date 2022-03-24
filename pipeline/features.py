@@ -328,7 +328,9 @@ def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
             try:
                 path = join(data_path, row['fn'])
                 df = pd.read_csv(path, index_col='time')
-                del df['index']
+                df =df.reindex(sorted(df.columns), axis=1)
+                if "Unnamed: 0" in df.columns:
+                    del df["Unnamed: 0"]
                 df = df_filter_func(df)
                 new_row = f(df)
             except AssertionError:
@@ -341,9 +343,7 @@ def get_feature_build_func(method_name, verbose=None, df_filter_func=None):
             for col in ['fn', 'target']:
                 new_row[col] = row[col]
             new_rows.append(new_row)
-
         res_df = pd.DataFrame(new_rows)
-
         res_df.to_csv(features_path, index=False)
 
     return wrapped
